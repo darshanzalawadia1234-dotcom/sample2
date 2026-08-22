@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, X, Calendar, Check, Plane, GripVertical } from 'lucide-react';
 import { PLACES_API_KEY } from '@/lib/config';
 import { loadGoogleMaps } from '@/lib/googleMaps';
+import { useTrips } from '@/context/TripContext';
 
 const STEPS = [
   { id: 1, name: 'Destination' },
@@ -24,6 +25,7 @@ const INITIAL_ITINERARY = [
   { id: 'day3', day: 3, title: 'Local Cuisine Tour', desc: 'Tasting menu and market visits.' },
 ];
 export default function PlanTrip() {
+  const { createTrip } = useTrips();
   const [activeStep, setActiveStep] = useState(1);
   const [slideDir, setSlideDir] = useState('right');
   const [destinations, setDestinations] = useState([]);
@@ -242,6 +244,12 @@ export default function PlanTrip() {
                   type="text"
                   value={searchQ}
                   onChange={(e) => setSearchQ(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQ.trim()) {
+                      e.preventDefault();
+                      addDestination(searchQ.trim());
+                    }
+                  }}
                   placeholder="Search a city or country..."
                   className="w-full bg-white border border-[var(--deep-navy)]/10 rounded-2xl py-4 pl-12 pr-4 text-[var(--ink)] font-mono text-sm focus:outline-none focus:border-[var(--coral)] focus:ring-1 focus:ring-[var(--coral)] transition-shadow shadow-sm"
                 />
@@ -392,7 +400,35 @@ export default function PlanTrip() {
               {error && <div className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>}
               <div className="pt-8 flex gap-4">
                 <button onClick={handleBack} className="px-8 py-4 rounded-xl font-semibold text-sm bg-white border border-[var(--deep-navy)]/10 hover:bg-gray-50 transition-colors">Back</button>
-                <MagneticButton onClick={() => navigate('/trips')} className="flex-1 py-4 rounded-xl font-semibold text-sm bg-[var(--coral)] text-white hover:bg-[#E55A3D] transition-colors inline-flex justify-center items-center gap-2">
+                <MagneticButton 
+                  onClick={() => {
+                    const newTrip = createTrip({
+                      name: destinations.join(' · ') || 'New Journey',
+                      description: `Trip to ${destinations.join(', ')} from ${dates.start} to ${dates.end}`,
+                      cover: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80',
+                      startDate: dates.start,
+                      endDate: dates.end,
+                      travelers: 2,
+                      budget: 50000,
+                      currency: 'INR',
+                      estimatedCost: 45000,
+                      interests: ['Culture', 'Food', 'Sightseeing'],
+                      style: 'Balanced',
+                      transport: 'Flight',
+                      stops: destinations.map((d) => ({
+                        destinationId: d.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                        nights: 3,
+                      })),
+                      days: itinerary.map((item) => ({
+                        date: dates.start,
+                        city: destinations[0] || 'Destination',
+                        blocks: [{ time: '10:00', activityId: item.id, city: destinations[0] || 'Destination' }],
+                      })),
+                    });
+                    navigate(`/trip/${newTrip.id}`);
+                  }} 
+                  className="flex-1 py-4 rounded-xl font-semibold text-sm bg-[var(--coral)] text-white hover:bg-[#E55A3D] transition-colors inline-flex justify-center items-center gap-2"
+                >
                   Confirm Trip <Plane className="w-4 h-4" />
                 </MagneticButton>
               </div>

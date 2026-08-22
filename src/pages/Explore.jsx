@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import LuggageTagCard from '@/components/LuggageTagCard';
-import { Compass, X } from 'lucide-react';
+import { Compass, Search, X } from 'lucide-react';
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -19,6 +19,7 @@ const REGION_MAP = {
 export default function Explore() {
   const [activeRegion, setActiveRegion] = useState('All');
   const [selectedCountry, setSelectedCountry] = useState(null); // ISO alpha-2
+  const [searchQuery, setSearchQuery] = useState('');
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const gridRef = useRef(null);
@@ -50,6 +51,14 @@ export default function Explore() {
 
   const filteredDestinations = useMemo(() => {
     let filtered = destinations;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(d => 
+        d.name.toLowerCase().includes(q) || 
+        d.country.toLowerCase().includes(q) ||
+        (d.tagline && d.tagline.toLowerCase().includes(q))
+      );
+    }
     if (selectedCountry) {
       filtered = filtered.filter(d => d.country === selectedCountry);
     } else if (activeRegion !== 'All') {
@@ -57,7 +66,7 @@ export default function Explore() {
       filtered = filtered.filter(d => allowedCodes.includes(d.countryCode));
     }
     return filtered;
-  }, [activeRegion, selectedCountry, destinations]);
+  }, [activeRegion, selectedCountry, searchQuery, destinations]);
 
   const handleCountryClick = (geo) => {
     const name = geo.properties.name;
@@ -97,9 +106,29 @@ export default function Explore() {
         <p className="font-mono text-[var(--compass-brass)] text-xs tracking-[0.25em] uppercase mb-4 flex items-center gap-2">
           <Compass className="w-4 h-4" /> Explore the Map
         </p>
-        <h1 className="font-serif text-4xl md:text-6xl tracking-tight mb-10">
+        <h1 className="font-serif text-4xl md:text-6xl tracking-tight mb-8">
           Find your <em className="italic text-[var(--horizon-mint)]">next stop.</em>
         </h1>
+
+        {/* Search Bar */}
+        <div className="relative max-w-xl mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--warm-paper)]/40" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by city, country, or region..."
+            className="w-full bg-[var(--deep-navy)]/60 border border-[var(--deep-navy)] rounded-full py-3 pl-11 pr-10 text-[var(--warm-paper)] font-mono text-sm placeholder:text-[var(--warm-paper)]/40 focus:outline-none focus:border-[var(--compass-brass)] transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--warm-paper)]/40 hover:text-[var(--warm-paper)]"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-4 -mx-6 px-6 md:mx-0 md:px-0">
           {REGIONS.map(r => (
