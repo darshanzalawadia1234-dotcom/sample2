@@ -3,6 +3,8 @@ import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import LuggageTagCard from '@/components/LuggageTagCard';
 import { Compass, Search, X } from 'lucide-react';
 
+import { DESTINATIONS } from '@/data/mockData';
+
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const REGIONS = ['All', 'Asia', 'Europe', 'Africa', 'Americas', 'Oceania'];
@@ -20,12 +22,21 @@ export default function Explore() {
   const [activeRegion, setActiveRegion] = useState('All');
   const [selectedCountry, setSelectedCountry] = useState(null); // ISO alpha-2
   const [searchQuery, setSearchQuery] = useState('');
-  const [destinations, setDestinations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [destinations, setDestinations] = useState(
+    DESTINATIONS.map(d => ({
+      id: d.id,
+      name: d.city,
+      countryCode: d.country.slice(0, 2).toUpperCase(),
+      country: d.country,
+      img: d.image,
+      tagline: d.region
+    }))
+  );
+  const [loading, setLoading] = useState(false);
   const gridRef = useRef(null);
 
   useEffect(() => {
-    fetch('https://restcountries.com/v3.1/all?fields=name,cca2,capital,region,flags')
+    fetch('https://raw.githubusercontent.com/mledoze/countries/master/countries.json')
       .then(res => res.json())
       .then(data => {
         const mapped = data
@@ -35,16 +46,15 @@ export default function Explore() {
             name: c.capital[0],
             countryCode: c.cca2,
             country: c.name.common,
-            img: c.flags.svg, // Using flag as placeholder image
+            img: `https://flagcdn.com/${c.cca2.toLowerCase()}.svg`,
             tagline: c.region
           }))
-          // Sort alphabetically by country name for consistency
           .sort((a, b) => a.country.localeCompare(b.country));
         setDestinations(mapped);
         setLoading(false);
       })
       .catch(err => {
-        console.error("Failed to fetch destinations", err);
+        console.warn("Using local destinations list:", err.message);
         setLoading(false);
       });
   }, []);

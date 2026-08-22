@@ -7,6 +7,7 @@ import { Search, X, Calendar, Check, Plane, GripVertical } from 'lucide-react';
 import { GEOAPIFY_API_KEY } from '@/lib/config';
 import { useTrips } from '@/context/TripContext';
 import { geocodeAutocomplete } from '@/lib/geoapify';
+import { DESTINATIONS } from '@/data/mockData';
 
 const STEPS = [
   { id: 1, name: 'Destination' },
@@ -16,8 +17,10 @@ const STEPS = [
 ];
 
 const MOCK_DESTINATIONS = [
-  'Paris, France', 'Tokyo, Japan', 'New York, USA', 'Dubai, UAE', 'Barcelona, Spain'
-];
+  ...DESTINATIONS.map(d => `${d.city}, ${d.country}`),
+  'Paris, France', 'Tokyo, Japan', 'New York, USA', 'Dubai, UAE', 'Barcelona, Spain',
+  'London, UK', 'Rome, Italy', 'Berlin, Germany', 'Sydney, Australia', 'Singapore'
+].filter((v, i, a) => a.indexOf(v) === i);
 
 const INITIAL_ITINERARY = [
   { id: 'day1', day: 1, title: 'Arrival & City Walk', desc: 'Settle in and explore the neighborhood.' },
