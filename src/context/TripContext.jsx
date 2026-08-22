@@ -1,11 +1,13 @@
-import { createContext, useContext, useMemo, useState, useCallback } from "react";
+import { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
 import { INITIAL_TRIPS, SAVED_DESTINATION_IDS, findActivity } from "@/data/mockData";
+import { supabase } from "@/lib/supabase";
 
 const TripContext = createContext(null);
 
 export function TripProvider({ children }) {
   const [trips, setTrips] = useState(INITIAL_TRIPS);
   const [savedDestinations, setSavedDestinations] = useState(SAVED_DESTINATION_IDS);
+  const [authUser, setAuthUser] = useState(null);
   const [user, setUser] = useState({
     name: "User",
     email: "daksh@globetrotter.io",
@@ -19,30 +21,98 @@ export function TripProvider({ children }) {
     const id = `trip-${Date.now()}`;
     const newTrip = { id, status: "upcoming", days: [], breakdown: {}, ...trip };
     setTrips((prev) => [newTrip, ...prev]);
+    if (supabase && authUser) {
+      supabase.from("trips").insert(toTripRow(newTrip, authUser.id)).then(({ error }) => {
+        if (error) console.warn("Could not save trip to Supabase:", error.message);
+      });
+    }
     return newTrip;
-  }, []);
+  }, [authUser]);
 
   const updateTrip = useCallback((id, patch) => {
     setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  }, []);
+    if (supabase && authUser) {
+      supabase.from("trips").update(toTripRow(patch)).eq("id", id).eq("user_id", authUser.id).then(({ error }) => {
+        if (error) console.warn("Could not update trip in Supabase:", error.message);
+      });
+    }
+  }, [authUser]);
 
   const deleteTrip = useCallback((id) => {
     setTrips((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+    if (supabase && authUser) {
+      supabase.from("trips").delete().eq("id", id).eq("user_id", authUser.id).then(({ error }) => {
+        if (error) console.warn("Could not delete trip from Supabase:", error.message);
+      });
+    }
+  }, [authUser]);
 
   const duplicateTrip = useCallback((id) => {
     setTrips((prev) => {
       const src = prev.find((t) => t.id === id);
       if (!src) return prev;
       const copy = { ...src, id: `trip-${Date.now()}`, name: `${src.name} (Copy)`, status: "upcoming" };
+      if (supabase && authUser) {
+        supabase.from("trips").insert(toTripRow(copy, authUser.id)).then(({ error }) => {
+          if (error) console.warn("Could not duplicate trip in Supabase:", error.message);
+        });
+      }
       return [copy, ...prev];
     });
-  }, []);
+  }, [authUser]);
 
   const toggleSaved = useCallback((destId) => {
-    setSavedDestinations((prev) =>
-      prev.includes(destId) ? prev.filter((x) => x !== destId) : [...prev, destId]
-    );
+    setSavedDestinations((prev) => {
+      const isSaved = prev.includes(destId);
+      const next = isSaved ? prev.filter((x) => x !== destId) : [...prev, destId];
+      if (supabase && authUser) {
+        const request = isSaved
+          ? supabase.from("saved_destinations").delete().eq("user_id", authUser.id).eq("destination_id", destId)
+          : supabase.from("saved_destinations").upsert({ user_id: authUser.id, destination_id: destId });
+        request.then(({ error }) => {
+          if (error) console.warn("Could not update saved destination:", error.message);
+        });
+      }
+      return next;
+    });
+  }, [authUser]);
+
+  const updateUser = useCallback((nextUser) => {
+    setUser(nextUser);
+    if (supabase && authUser) {
+      supabase.from("profiles").upsert(toProfileRow(nextUser, authUser.id)).then(({ error }) => {
+        if (error) console.warn("Could not update profile in Supabase:", error.message);
+      });
+    }
+  }, [authUser]);
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+
+    let active = true;
+    const loadUserData = async (sessionUser) => {
+      if (!sessionUser) {
+        setAuthUser(null);
+        return;
+      }
+      setAuthUser(sessionUser);
+      const [profileResult, tripsResult, savedResult] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", sessionUser.id).maybeSingle(),
+        supabase.from("trips").select("*").eq("user_id", sessionUser.id).order("created_at", { ascending: false }),
+        supabase.from("saved_destinations").select("destination_id").eq("user_id", sessionUser.id),
+      ]);
+      if (!active) return;
+      if (profileResult.data) setUser(fromProfileRow(profileResult.data, sessionUser));
+      if (tripsResult.data?.length) setTrips(tripsResult.data.map(fromTripRow));
+      if (savedResult.data) setSavedDestinations(savedResult.data.map((item) => item.destination_id));
+    };
+
+    supabase.auth.getSession().then(({ data }) => loadUserData(data.session?.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => loadUserData(session?.user));
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const getTrip = useCallback(
@@ -73,7 +143,7 @@ export function TripProvider({ children }) {
     () => ({
       trips,
       user,
-      setUser,
+      setUser: updateUser,
       savedDestinations,
       createTrip,
       updateTrip,
@@ -83,10 +153,63 @@ export function TripProvider({ children }) {
       getTrip,
       computeTripCost,
     }),
-    [trips, user, savedDestinations, createTrip, updateTrip, deleteTrip, duplicateTrip, toggleSaved, getTrip, computeTripCost]
+    [trips, user, savedDestinations, updateUser, createTrip, updateTrip, deleteTrip, duplicateTrip, toggleSaved, getTrip, computeTripCost]
   );
 
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
+}
+
+function toTripRow(trip, userId) {
+  return {
+    ...(userId ? { id: trip.id, user_id: userId } : {}),
+    name: trip.name,
+    description: trip.description || "",
+    cover: trip.cover || "",
+    start_date: trip.startDate || null,
+    end_date: trip.endDate || null,
+    status: trip.status || "upcoming",
+    travelers: trip.travelers || 1,
+    budget: trip.budget || 0,
+    currency: trip.currency || "INR",
+    estimated_cost: trip.estimatedCost || 0,
+    interests: trip.interests || [],
+    style: trip.style || "Balanced",
+    transport: trip.transport || "Mixed",
+    stops: trip.stops || [],
+    breakdown: trip.breakdown || {},
+    days: trip.days || [],
+  };
+}
+
+function fromTripRow(row) {
+  return {
+    ...row,
+    startDate: row.start_date,
+    endDate: row.end_date,
+    estimatedCost: row.estimated_cost,
+  };
+}
+
+function toProfileRow(profile, userId) {
+  return {
+    id: userId,
+    name: profile.name || "User",
+    language: profile.language || "English",
+    photo: profile.photo || "",
+    style: profile.style || "Balanced",
+    favourite_activities: profile.favouriteActivities || [],
+  };
+}
+
+function fromProfileRow(row, sessionUser) {
+  return {
+    name: row.name || sessionUser.user_metadata?.full_name || "User",
+    email: sessionUser.email || "",
+    language: row.language || "English",
+    photo: row.photo || sessionUser.user_metadata?.avatar_url || "",
+    style: row.style || "Balanced",
+    favouriteActivities: row.favourite_activities || [],
+  };
 }
 
 export function useTrips() {
