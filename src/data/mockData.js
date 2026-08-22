@@ -1,0 +1,378 @@
+// Mock destinations covering popular travel spots
+export const DESTINATIONS = [
+  {
+    id: "goa",
+    city: "Goa",
+    country: "India",
+    region: "South Asia",
+    rating: 4.7,
+    costIndex: "$$",
+    popularity: 96,
+    lat: 15.2993,
+    lng: 74.124,
+    description: "Sun-soaked beaches, Portuguese heritage and buzzing night markets.",
+    image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Beaches", "Nightlife", "Food"],
+  },
+  {
+    id: "paris",
+    city: "Paris",
+    country: "France",
+    region: "Europe",
+    rating: 4.9,
+    costIndex: "$$$",
+    popularity: 99,
+    lat: 48.8566,
+    lng: 2.3522,
+    description: "The city of lights — art, patisserie, and Haussmann boulevards.",
+    image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB0cmF2ZWwlMjBkZXN0aW5hdGlvbiUyMFBhcmlzfGVufDB8fHx8MTc4NzM3MDc1MHww&ixlib=rb-4.1.0&q=85",
+    tags: ["Culture", "History", "Food"],
+  },
+  {
+    id: "tokyo",
+    city: "Tokyo",
+    country: "Japan",
+    region: "East Asia",
+    rating: 4.8,
+    costIndex: "$$$",
+    popularity: 97,
+    lat: 35.6762,
+    lng: 139.6503,
+    description: "Neon-lit streets, ancient shrines, and the world's best ramen.",
+    image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Culture", "Food", "Shopping"],
+  },
+  {
+    id: "dubai",
+    city: "Dubai",
+    country: "UAE",
+    region: "Middle East",
+    rating: 4.6,
+    costIndex: "$$$$",
+    popularity: 92,
+    lat: 25.2048,
+    lng: 55.2708,
+    description: "Skyscrapers, dune safaris and gold souks in equal measure.",
+    image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Luxury", "Shopping", "Adventure"],
+  },
+  {
+    id: "manali",
+    city: "Manali",
+    country: "India",
+    region: "South Asia",
+    rating: 4.6,
+    costIndex: "$",
+    popularity: 88,
+    lat: 32.2432,
+    lng: 77.1892,
+    description: "Snow-capped Himalayan getaway, pine forests and mountain cafes.",
+    image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Nature", "Adventure", "Photography"],
+  },
+  {
+    id: "bali",
+    city: "Bali",
+    country: "Indonesia",
+    region: "Southeast Asia",
+    rating: 4.8,
+    costIndex: "$$",
+    popularity: 95,
+    lat: -8.4095,
+    lng: 115.1889,
+    description: "Rice terraces, temples, surf breaks — the island of the gods.",
+    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Beaches", "Nature", "Relaxation"],
+  },
+  {
+    id: "mumbai",
+    city: "Mumbai",
+    country: "India",
+    region: "South Asia",
+    rating: 4.5,
+    costIndex: "$$",
+    popularity: 90,
+    lat: 19.076,
+    lng: 72.8777,
+    description: "India's city that never sleeps — art deco, street food and Bollywood.",
+    image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Culture", "Food", "Nightlife"],
+  },
+  {
+    id: "jaipur",
+    city: "Jaipur",
+    country: "India",
+    region: "South Asia",
+    rating: 4.7,
+    costIndex: "$",
+    popularity: 89,
+    lat: 26.9124,
+    lng: 75.7873,
+    description: "The pink city — palaces, forts and vibrant bazaars.",
+    image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80",
+    tags: ["History", "Culture", "Photography"],
+  },
+  {
+    id: "london",
+    city: "London",
+    country: "United Kingdom",
+    region: "Europe",
+    rating: 4.7,
+    costIndex: "$$$",
+    popularity: 96,
+    lat: 51.5074,
+    lng: -0.1278,
+    description: "Royal parks, world museums and endless riverside pubs.",
+    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1200&q=80",
+    tags: ["History", "Culture", "Shopping"],
+  },
+  {
+    id: "newyork",
+    city: "New York",
+    country: "USA",
+    region: "North America",
+    rating: 4.8,
+    costIndex: "$$$$",
+    popularity: 98,
+    lat: 40.7128,
+    lng: -74.006,
+    description: "The concrete jungle — Broadway, brownstones and 24/7 energy.",
+    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Culture", "Food", "Shopping"],
+  },
+  {
+    id: "kashmir",
+    city: "Kashmir",
+    country: "India",
+    region: "South Asia",
+    rating: 4.8,
+    costIndex: "$$",
+    popularity: 87,
+    lat: 34.0837,
+    lng: 74.7973,
+    description: "Dal Lake shikaras, Mughal gardens and pine-clad valleys.",
+    image: "https://images.unsplash.com/photo-1601273712618-3d5b5df7b7f1?auto=format&fit=crop&w=1200&q=80",
+    tags: ["Nature", "Relaxation", "Photography"],
+  },
+  {
+    id: "ahmedabad",
+    city: "Ahmedabad",
+    country: "India",
+    region: "South Asia",
+    rating: 4.4,
+    costIndex: "$",
+    popularity: 78,
+    lat: 23.0225,
+    lng: 72.5714,
+    description: "UNESCO heritage city with pol architecture and vegetarian street food.",
+    image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1200&q=80",
+    tags: ["History", "Food", "Culture"],
+  },
+];
+
+// Mock activities per destination
+export const ACTIVITIES = {
+  goa: [
+    { id: "g1", name: "Fort Aguada", category: "History", cost: 50, duration: 2, rating: 4.6, image: "https://images.unsplash.com/photo-1587922546925-2f8b3f5c2b6f?auto=format&fit=crop&w=800&q=80", description: "17th-century Portuguese fort with sweeping Arabian sea views." },
+    { id: "g2", name: "Baga Beach", category: "Beaches", cost: 0, duration: 3, rating: 4.5, image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80", description: "Lively beach lined with shacks, water sports and sunset views." },
+    { id: "g3", name: "Anjuna Flea Market", category: "Shopping", cost: 500, duration: 2, rating: 4.4, image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80", description: "Wednesday hippie market with clothing, jewellery and food stalls." },
+    { id: "g4", name: "Dudhsagar Falls Trek", category: "Adventure", cost: 1500, duration: 6, rating: 4.8, image: "https://images.unsplash.com/photo-1533760881669-80db4d7b341a?auto=format&fit=crop&w=800&q=80", description: "Four-tiered waterfall reached via a jungle jeep and short trek." },
+    { id: "g5", name: "Scuba Diving Grande Island", category: "Adventure", cost: 3500, duration: 4, rating: 4.9, image: "https://images.unsplash.com/photo-1682687982501-1e58ab814714?auto=format&fit=crop&w=800&q=80", description: "Try dives at wreck sites off the coast of Vasco." },
+    { id: "g6", name: "Goan Fish Thali Lunch", category: "Food", cost: 400, duration: 1, rating: 4.7, image: "https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=800&q=80", description: "Local seafood platter — rice, curry, fried fish and solkadhi." },
+  ],
+  paris: [
+    { id: "p1", name: "Eiffel Tower Summit", category: "History", cost: 2800, duration: 2, rating: 4.8, image: "https://images.unsplash.com/photo-1543349689-9a4d426bee8e?auto=format&fit=crop&w=800&q=80", description: "Ride to the top of the iron lattice icon for a 360° city view." },
+    { id: "p2", name: "Louvre Museum", category: "Culture", cost: 2200, duration: 3, rating: 4.9, image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80", description: "See the Mona Lisa, Venus de Milo and 35,000 works of art." },
+    { id: "p3", name: "Seine River Cruise", category: "Relaxation", cost: 1500, duration: 1, rating: 4.6, image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80", description: "One-hour boat glide past Notre-Dame and Île de la Cité." },
+    { id: "p4", name: "Montmartre Walking Tour", category: "Culture", cost: 0, duration: 2, rating: 4.5, image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80", description: "Bohemian hilltop neighbourhood with Sacré-Cœur and artists' square." },
+    { id: "p5", name: "Le Marais Food Tour", category: "Food", cost: 6500, duration: 3, rating: 4.9, image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80", description: "Falafel, patisserie and natural wine through the trendy Marais district." },
+  ],
+  tokyo: [
+    { id: "t1", name: "Senso-ji Temple", category: "History", cost: 0, duration: 2, rating: 4.7, image: "https://images.unsplash.com/photo-1583400838909-4d7b3a20a4d0?auto=format&fit=crop&w=800&q=80", description: "Tokyo's oldest Buddhist temple in Asakusa, founded in 645 AD." },
+    { id: "t2", name: "Shibuya Crossing", category: "Culture", cost: 0, duration: 1, rating: 4.6, image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=800&q=80", description: "The world's busiest pedestrian scramble." },
+    { id: "t3", name: "Tsukiji Sushi Breakfast", category: "Food", cost: 4500, duration: 2, rating: 4.9, image: "https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80", description: "Freshest omakase experience at the outer market stalls." },
+    { id: "t4", name: "TeamLab Planets", category: "Culture", cost: 3200, duration: 2, rating: 4.8, image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80", description: "Immersive digital art installation you walk through barefoot." },
+  ],
+  dubai: [
+    { id: "d1", name: "Burj Khalifa Observation", category: "History", cost: 4200, duration: 2, rating: 4.7, image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80", description: "Level 124 and 148 observation decks of the world's tallest tower." },
+    { id: "d2", name: "Desert Dune Safari", category: "Adventure", cost: 5500, duration: 6, rating: 4.9, image: "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?auto=format&fit=crop&w=800&q=80", description: "4x4 dune bashing, camel ride and Bedouin dinner under the stars." },
+    { id: "d3", name: "Gold Souk", category: "Shopping", cost: 0, duration: 2, rating: 4.4, image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80", description: "Traditional Deira market with 300+ jewellery retailers." },
+  ],
+  manali: [
+    { id: "m1", name: "Solang Valley Paragliding", category: "Adventure", cost: 2500, duration: 2, rating: 4.8, image: "https://images.pexels.com/photos/17301678/pexels-photo-17301678.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940", description: "Tandem paraglide over pine valleys with an experienced pilot." },
+    { id: "m2", name: "Hidimba Devi Temple", category: "History", cost: 0, duration: 1, rating: 4.5, image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80", description: "Ancient cave-temple set among cedar trees, from 1553 AD." },
+    { id: "m3", name: "Old Manali Cafés", category: "Food", cost: 800, duration: 2, rating: 4.6, image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80", description: "Riverside cafés serving Israeli, Italian and local Himachali food." },
+  ],
+  bali: [
+    { id: "b1", name: "Tegallalang Rice Terraces", category: "Nature", cost: 300, duration: 2, rating: 4.7, image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80", description: "Iconic tiered rice paddies just north of Ubud." },
+    { id: "b2", name: "Uluwatu Sunset & Kecak Dance", category: "Culture", cost: 900, duration: 2, rating: 4.8, image: "https://images.unsplash.com/photo-1518509562904-e7ef99cddc85?auto=format&fit=crop&w=800&q=80", description: "Cliffside temple show with 70-person fire chant at golden hour." },
+    { id: "b3", name: "Canggu Surf Lesson", category: "Adventure", cost: 1800, duration: 2, rating: 4.7, image: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80", description: "Beginner-friendly break at Batu Bolong beach." },
+  ],
+  mumbai: [
+    { id: "mu1", name: "Gateway of India", category: "History", cost: 0, duration: 1, rating: 4.5, image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=800&q=80", description: "Basalt-arch monument overlooking the Arabian Sea." },
+    { id: "mu2", name: "Marine Drive Sunset", category: "Relaxation", cost: 0, duration: 1, rating: 4.7, image: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80", description: "3.6-km promenade nicknamed the Queen's Necklace." },
+    { id: "mu3", name: "Bandra Street Food Tour", category: "Food", cost: 750, duration: 3, rating: 4.8, image: "https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=800&q=80", description: "Vada pav, pav bhaji, kebabs — the classic Mumbai crawl." },
+  ],
+  jaipur: [
+    { id: "j1", name: "Amber Fort", category: "History", cost: 500, duration: 3, rating: 4.8, image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80", description: "Hilltop fort with the mirrored Sheesh Mahal, dating to 1592." },
+    { id: "j2", name: "Hawa Mahal Photo Stop", category: "Photography", cost: 200, duration: 1, rating: 4.6, image: "https://images.unsplash.com/photo-1587467512961-120760940315?auto=format&fit=crop&w=800&q=80", description: "The five-storey Palace of Winds with its 953 latticed windows." },
+    { id: "j3", name: "Bapu Bazaar Shopping", category: "Shopping", cost: 1200, duration: 2, rating: 4.4, image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80", description: "Jaipur's go-to bazaar for jootis, block-print textiles and lac bangles." },
+  ],
+};
+
+// Mock existing trips for the user
+export const INITIAL_TRIPS = [
+  {
+    id: "trip-goa-2026",
+    name: "Goa Escape",
+    description: "A 4-day beach and food break with the crew.",
+    startDate: "2026-12-12",
+    endDate: "2026-12-16",
+    travelers: 2,
+    budget: 20000,
+    currency: "INR",
+    estimatedCost: 18400,
+    status: "upcoming",
+    cover: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80",
+    interests: ["Beaches", "Food", "Nightlife"],
+    style: "Balanced",
+    transport: "Rental Bike",
+    stops: [{ destinationId: "goa", nights: 4 }],
+    days: [
+      {
+        date: "2026-12-12",
+        city: "Goa",
+        blocks: [
+          { time: "09:00", activityId: "g1", city: "Goa" },
+          { time: "12:30", activityId: "g6", city: "Goa" },
+          { time: "14:00", activityId: "g2", city: "Goa" },
+          { time: "18:30", activityId: "g3", city: "Goa" },
+        ],
+      },
+      {
+        date: "2026-12-13",
+        city: "Goa",
+        blocks: [
+          { time: "07:30", activityId: "g4", city: "Goa" },
+          { time: "19:00", activityId: "g6", city: "Goa" },
+        ],
+      },
+      {
+        date: "2026-12-14",
+        city: "Goa",
+        blocks: [
+          { time: "10:00", activityId: "g5", city: "Goa" },
+          { time: "16:00", activityId: "g2", city: "Goa" },
+        ],
+      },
+      {
+        date: "2026-12-15",
+        city: "Goa",
+        blocks: [
+          { time: "11:00", activityId: "g3", city: "Goa" },
+          { time: "20:00", activityId: "g6", city: "Goa" },
+        ],
+      },
+    ],
+    breakdown: { accommodation: 6000, food: 4000, transport: 3000, activities: 4000, misc: 1400 },
+  },
+  {
+    id: "trip-jaipur-2026",
+    name: "Jaipur Adventure",
+    description: "Palaces, forts and pink walls.",
+    startDate: "2026-03-10",
+    endDate: "2026-03-13",
+    travelers: 3,
+    budget: 15000,
+    currency: "INR",
+    estimatedCost: 12800,
+    status: "past",
+    cover: "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=1200&q=80",
+    interests: ["History", "Culture", "Photography"],
+    style: "Budget",
+    transport: "Taxi",
+    stops: [{ destinationId: "jaipur", nights: 3 }],
+    days: [],
+    breakdown: { accommodation: 4500, food: 2400, transport: 2000, activities: 2800, misc: 1100 },
+  },
+  {
+    id: "trip-manali-2026",
+    name: "Manali Escape",
+    description: "Weekend getaway to the mountains.",
+    startDate: "2026-08-05",
+    endDate: "2026-08-08",
+    travelers: 4,
+    budget: 22000,
+    currency: "INR",
+    estimatedCost: 24500,
+    status: "over-budget",
+    cover: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1200&q=80",
+    interests: ["Nature", "Adventure"],
+    style: "Balanced",
+    transport: "Mixed",
+    stops: [{ destinationId: "manali", nights: 3 }],
+    days: [],
+    breakdown: { accommodation: 8000, food: 4500, transport: 5000, activities: 5500, misc: 1500 },
+  },
+  {
+    id: "trip-mumbai-2025",
+    name: "Mumbai Weekend",
+    description: "Two nights of street food and the sea.",
+    startDate: "2025-11-14",
+    endDate: "2025-11-16",
+    travelers: 2,
+    budget: 12000,
+    currency: "INR",
+    estimatedCost: 9800,
+    status: "past",
+    cover: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?auto=format&fit=crop&w=1200&q=80",
+    interests: ["Food", "Culture", "Nightlife"],
+    style: "Balanced",
+    transport: "Public Transport",
+    stops: [{ destinationId: "mumbai", nights: 2 }],
+    days: [],
+    breakdown: { accommodation: 3800, food: 2600, transport: 1200, activities: 1400, misc: 800 },
+  },
+];
+
+export const INTERESTS = [
+  { id: "adventure", label: "Adventure", icon: "Mountain" },
+  { id: "beaches", label: "Beaches", icon: "Waves" },
+  { id: "nature", label: "Nature", icon: "TreePine" },
+  { id: "history", label: "History", icon: "Landmark" },
+  { id: "culture", label: "Culture", icon: "Theater" },
+  { id: "food", label: "Food", icon: "UtensilsCrossed" },
+  { id: "shopping", label: "Shopping", icon: "ShoppingBag" },
+  { id: "nightlife", label: "Nightlife", icon: "Moon" },
+  { id: "photography", label: "Photography", icon: "Camera" },
+  { id: "family", label: "Family", icon: "Users" },
+  { id: "relaxation", label: "Relaxation", icon: "Sparkles" },
+  { id: "luxury", label: "Luxury", icon: "Gem" },
+];
+
+export const TRAVEL_STYLES = ["Budget", "Balanced", "Luxury"];
+export const TRANSPORT_MODES = ["Walking", "Public Transport", "Taxi", "Rental Car", "Rental Bike", "Mixed"];
+
+export const SAVED_DESTINATION_IDS = ["goa", "paris", "manali"];
+
+export function findDestination(id) {
+  return DESTINATIONS.find((d) => d.id === id);
+}
+export function findActivity(destId, actId) {
+  return (ACTIVITIES[destId] || []).find((a) => a.id === actId);
+}
+
+export function computeDays(start, end) {
+  if (!start || !end) return 0;
+  const s = new Date(start);
+  const e = new Date(end);
+  return Math.max(1, Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1);
+}
+
+export function formatDateRange(start, end) {
+  if (!start || !end) return "";
+  const opts = { month: "short", day: "numeric" };
+  const s = new Date(start).toLocaleDateString("en-US", opts);
+  const e = new Date(end).toLocaleDateString("en-US", { ...opts, year: "numeric" });
+  return `${s} – ${e}`;
+}
