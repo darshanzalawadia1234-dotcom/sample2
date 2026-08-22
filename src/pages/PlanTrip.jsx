@@ -4,8 +4,7 @@ import BudgetDial from '@/components/FlightDeck/BudgetDial';
 import MagneticButton from '@/components/MagneticButton';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Calendar, Check, Plane, GripVertical } from 'lucide-react';
-import { PLACES_API_KEY } from '@/lib/config';
-import { loadGoogleMaps } from '@/lib/googleMaps';
+import { GEOAPIFY_API_KEY } from '@/lib/config';
 import { useTrips } from '@/context/TripContext';
 import { geocodeAutocomplete } from '@/lib/geoapify';
 
@@ -45,40 +44,22 @@ export default function PlanTrip() {
       return;
     }
     const timer = setTimeout(() => {
-      geocodeAutocomplete(searchQ).then((results) => {
-        if (results && results.length > 0) {
-          setLiveSuggestions(results.map(r => r.name || `${r.city}, ${r.country}`));
-        }
-      });
+      geocodeAutocomplete(searchQ)
+        .then((results) => {
+          setPlacesReady(results !== null);
+          setLiveSuggestions((results || []).map(r => r.name || `${r.city}, ${r.country}`));
+        })
+        .catch(() => {
+          setPlacesReady(false);
+          setLiveSuggestions([]);
+        });
     }, 200);
     return () => clearTimeout(timer);
   }, [searchQ]);
 
   useEffect(() => {
-    if (activeStep !== 1 || !searchInputRef.current || !PLACES_API_KEY) return undefined;
-
-    let autocomplete;
-    let placeListener;
-    let cancelled = false;
-    loadGoogleMaps(PLACES_API_KEY).then((maps) => {
-      if (cancelled || !searchInputRef.current || !maps.places) return;
-      setPlacesReady(true);
-      autocomplete = new maps.places.Autocomplete(searchInputRef.current, {
-        fields: ['formatted_address', 'name'],
-        types: ['(cities)'],
-      });
-      placeListener = autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace();
-        const destination = place.formatted_address || place.name;
-        if (destination) addDestination(destination);
-      });
-    }).catch(() => setPlacesReady(false));
-
-    return () => {
-      cancelled = true;
-      if (placeListener) placeListener.remove();
-    };
-  }, [activeStep]);
+    setPlacesReady(Boolean(GEOAPIFY_API_KEY));
+  }, []);
 
   // Auto-fill dates string for the UI
   const dateString = dates.start && dates.end ? `${dates.start.replace(/-/g, '/')} – ${dates.end.replace(/-/g, '/')} · ${Math.ceil((new Date(dates.end) - new Date(dates.start)) / (1000 * 60 * 60 * 24) + 1)} DAYS` : '';
@@ -273,7 +254,7 @@ export default function PlanTrip() {
 
                 {searchQ && !placesReady && (
                   <div className="mt-2 text-[11px] font-mono text-[var(--ink)]/50">
-                    Google Places unavailable. Choose a destination from the local suggestions.
+                    Geoapify search unavailable. Choose a destination from the local suggestions.
                   </div>
                 )}
                 

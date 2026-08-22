@@ -16,3 +16,7 @@ The app persists authenticated user profiles, trips, and saved destinations in S
 `supabase/migrations/20260822000000_initial_schema.sql`
 
 The migration creates the tables, row-level security policies, and the trigger that creates a profile when a user signs up. Google and Apple sign-in also need to be enabled and configured under Supabase Authentication providers.
+
+## Geoapify APIs
+
+Set `VITE_GEOAPIFY_API_KEY` in `.env.local`. The app uses Geoapify autocomplete for destination search, Places for itinerary activity discovery, Routing for trip routes, and exposes helpers for geocoding, postcode search, place details, boundaries, geometry, and custom map icons in `src/lib/geoapify.js`.

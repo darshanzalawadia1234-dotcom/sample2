@@ -63,6 +63,7 @@ export async function geocodeAutocomplete(text, options = {}) {
     limit: 6,
     ...options
   });
+  if (!data) return null;
   return data?.features?.map(f => ({
     name: f.properties.formatted || f.properties.city || f.properties.name,
     city: f.properties.city || f.properties.name,
@@ -135,6 +136,19 @@ export async function getBoundariesPartOf(id, options = {}) {
     ...options
   });
   return data?.features || [];
+}
+
+/**
+ * Geometry API helper for simplifying or decoding GeoJSON geometries.
+ * https://api.geoapify.com/v1/geometry
+ */
+export async function getGeometry(geometry, options = {}) {
+  if (!geometry) return null;
+  const data = await getGeoapify(`${BASE_V1}/geometry`, {
+    geometry: typeof geometry === 'string' ? geometry : JSON.stringify(geometry),
+    ...options,
+  });
+  return data || null;
 }
 
 /**

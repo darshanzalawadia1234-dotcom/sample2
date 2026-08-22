@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
-import { loadGoogleMaps } from "@/lib/googleMaps";
+import { calculateRoute } from "@/lib/geoapify";
 
 // Simple mock map: renders points on an SVG grid with a route line.
 export default function MapView({ points = [], title = "Trip Route" }) {
-  const mapRef = useRef(null);
-  const [googleMapReady, setGoogleMapReady] = useState(false);
-  const [googleMapError, setGoogleMapError] = useState(false);
+  const [routeGeometry, setRouteGeometry] = useState(null);
+  const [routeError, setRouteError] = useState(false);
   const { normalized, distance, duration } = useMemo(() => {
     if (!points.length) return { normalized: [], distance: 0, duration: 0 };
     const lats = points.map((p) => p.lat);
@@ -30,56 +29,34 @@ export default function MapView({ points = [], title = "Trip Route" }) {
   }, [points]);
 
   useEffect(() => {
-    if (!points.length) return undefined;
-
+    if (points.length < 2) {
+      setRouteGeometry(null);
+      return undefined;
+    }
     let cancelled = false;
-    loadGoogleMaps()
-      .then((maps) => {
-        if (cancelled || !mapRef.current) return;
-        const bounds = new maps.LatLngBounds();
-        points.forEach((point) => bounds.extend({ lat: point.lat, lng: point.lng }));
-        const map = new maps.Map(mapRef.current, {
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: true,
-          clickableIcons: false,
-          styles: [
-            { elementType: "geometry", stylers: [{ color: "#f1ecdf" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#12213f" }] },
-            { featureType: "water", elementType: "geometry", stylers: [{ color: "#b9d8d2" }] },
-            { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-          ],
-        });
-        map.fitBounds(bounds, 56);
-        points.forEach((point, index) => {
-          new maps.Marker({
-            map,
-            position: { lat: point.lat, lng: point.lng },
-            label: { text: String.fromCharCode(65 + index), color: "#12213f", fontWeight: "700" },
-            title: point.name,
-          });
-        });
-
-        if (points.length > 1) {
-          const directions = new maps.DirectionsService();
-          const renderer = new maps.DirectionsRenderer({ map, suppressMarkers: true, polylineOptions: { strokeColor: "#b8862f", strokeWeight: 4 } });
-          directions.route({
-            origin: { lat: points[0].lat, lng: points[0].lng },
-            destination: { lat: points[points.length - 1].lat, lng: points[points.length - 1].lng },
-            waypoints: points.slice(1, -1).map((point) => ({ location: { lat: point.lat, lng: point.lng }, stopover: true })),
-            travelMode: "DRIVING",
-          }, (result, status) => {
-            if (!cancelled && status === "OK") renderer.setDirections(result);
-          });
-        }
-        setGoogleMapReady(true);
-      })
-      .catch(() => {
-        if (!cancelled) setGoogleMapError(true);
-      });
-
+    calculateRoute(points).then((route) => {
+      if (cancelled) return;
+      if (route?.geometry) setRouteGeometry(route.geometry);
+      else setRouteError(true);
+    }).catch(() => {
+      if (!cancelled) setRouteError(true);
+    });
     return () => { cancelled = true; };
   }, [points]);
+
+  const routeLine = useMemo(() => {
+    if (!routeGeometry) return [];
+    const coordinates = routeGeometry.type === "MultiLineString"
+      ? routeGeometry.coordinates.flat()
+      : routeGeometry.coordinates || [];
+    const lats = points.map((point) => point.lat);
+    const lngs = points.map((point) => point.lng);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+    const spanLat = Math.max(0.01, maxLat - minLat);
+    const spanLng = Math.max(0.01, maxLng - minLng);
+    return coordinates.map(([lng, lat]) => `${60 + ((lng - minLng) / spanLng) * 580},${320 - ((lat - minLat) / spanLat) * 260}`).join(" ");
+  }, [routeGeometry, points]);
 
   return (
     <div className="rounded-3xl overflow-hidden border border-border">
@@ -91,13 +68,12 @@ export default function MapView({ points = [], title = "Trip Route" }) {
         </div>
       </div>
       <div className="relative map-canvas h-[420px]">
-        <div ref={mapRef} className={`absolute inset-0 ${googleMapReady ? "" : "hidden"}`} aria-label="Google Maps trip route" />
         <div className="absolute inset-0 map-grid" />
-        <svg viewBox="0 0 700 380" preserveAspectRatio="xMidYMid meet" className={`absolute inset-0 w-full h-full ${googleMapReady ? "hidden" : ""}`}>
+        <svg viewBox="0 0 700 380" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 w-full h-full">
           {/* Route */}
           {normalized.length > 1 && (
             <polyline
-              points={normalized.map((p) => `${p.x},${p.y}`).join(" ")}
+              points={routeLine || normalized.map((p) => `${p.x},${p.y}`).join(" ")}
               fill="none"
               stroke="#2C4C3B"
               strokeWidth="3"
@@ -123,9 +99,9 @@ export default function MapView({ points = [], title = "Trip Route" }) {
             </div>
           </div>
         )}
-        {googleMapError && normalized.length > 0 && (
+        {routeError && normalized.length > 0 && (
           <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-sm">
-            Google Maps unavailable — showing offline route
+            Geoapify routing unavailable — showing offline route
           </div>
         )}
       </div>
