@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TripProvider } from "@/context/TripContext";
 import Layout from "@/components/Layout";
@@ -15,6 +15,17 @@ import SharedTrip from "@/pages/SharedTrip";
 import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
+import { useTrips } from "@/context/TripContext";
+
+function RequireAuth({ children }) {
+  const { authUser, authLoading } = useTrips();
+
+  if (authLoading) {
+    return <div className="min-h-screen grid place-items-center bg-[var(--warm-paper)] text-[var(--runway-navy)]">Loading your travel desk...</div>;
+  }
+
+  return authUser ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -22,7 +33,9 @@ function App() {
       <TripProvider>
         <BrowserRouter>
           <Routes>
-            <Route element={<Layout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/plan" element={<PlanTrip />} />
@@ -33,8 +46,6 @@ function App() {
               <Route path="/trip/:id/budget" element={<BudgetPage />} />
               <Route path="/share/:id" element={<SharedTrip />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
             </Route>
           </Routes>
         </BrowserRouter>

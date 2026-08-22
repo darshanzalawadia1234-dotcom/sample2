@@ -13,6 +13,10 @@ export default function SignUp() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    if (!supabase) {
+      toast.error("Supabase is not configured. Add the VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY values.");
+      return;
+    }
     if (!name || !email || !password) {
       toast.error("Please fill in all fields");
       return;
@@ -34,11 +38,15 @@ export default function SignUp() {
       toast.error(error.message);
     } else {
       toast.success("Account created! Check your email to verify.");
-      navigate("/");
+      navigate(data.session ? "/dashboard" : "/login");
     }
   };
 
   const handleSocialSignUp = async (provider) => {
+    if (!supabase) {
+      toast.error("Supabase is not configured.");
+      return;
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider.toLowerCase(),
     });

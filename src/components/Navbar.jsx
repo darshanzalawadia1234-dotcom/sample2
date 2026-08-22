@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
 
 const links = [
   { to: "/", label: "Home" },
@@ -24,6 +25,11 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    if (supabase) await supabase.auth.signOut();
+    navigate("/login", { replace: true });
+  };
 
   // Plan page is light theme, others are dark theme
   const isLight = location.pathname === '/plan';
@@ -84,7 +90,7 @@ export default function Navbar() {
               <DropdownMenuItem onClick={() => navigate("/profile")}>Profile & Settings</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/trips")}>My Trips</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Sign out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut} className="text-destructive">Sign out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

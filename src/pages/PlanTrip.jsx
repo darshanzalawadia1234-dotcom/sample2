@@ -31,6 +31,7 @@ export default function PlanTrip() {
   const [dates, setDates] = useState({ start: '', end: '' });
   const [itinerary, setItinerary] = useState([]);
   const [error, setError] = useState(null);
+  const [placesReady, setPlacesReady] = useState(false);
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -42,6 +43,7 @@ export default function PlanTrip() {
     let cancelled = false;
     loadGoogleMaps(PLACES_API_KEY).then((maps) => {
       if (cancelled || !searchInputRef.current || !maps.places) return;
+      setPlacesReady(true);
       autocomplete = new maps.places.Autocomplete(searchInputRef.current, {
         fields: ['formatted_address', 'name'],
         types: ['(cities)'],
@@ -51,7 +53,7 @@ export default function PlanTrip() {
         const destination = place.formatted_address || place.name;
         if (destination) addDestination(destination);
       });
-    }).catch(() => undefined);
+    }).catch(() => setPlacesReady(false));
 
     return () => {
       cancelled = true;
@@ -243,6 +245,12 @@ export default function PlanTrip() {
                   placeholder="Search a city or country..."
                   className="w-full bg-white border border-[var(--deep-navy)]/10 rounded-2xl py-4 pl-12 pr-4 text-[var(--ink)] font-mono text-sm focus:outline-none focus:border-[var(--coral)] focus:ring-1 focus:ring-[var(--coral)] transition-shadow shadow-sm"
                 />
+
+                {searchQ && !placesReady && (
+                  <div className="mt-2 text-[11px] font-mono text-[var(--ink)]/50">
+                    Google Places unavailable. Choose a destination from the local suggestions.
+                  </div>
+                )}
                 
                 {searchQ && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[var(--deep-navy)]/10 rounded-xl shadow-lg z-10 overflow-hidden">

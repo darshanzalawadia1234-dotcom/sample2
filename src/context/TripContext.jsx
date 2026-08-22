@@ -8,6 +8,7 @@ export function TripProvider({ children }) {
   const [trips, setTrips] = useState(INITIAL_TRIPS);
   const [savedDestinations, setSavedDestinations] = useState(SAVED_DESTINATION_IDS);
   const [authUser, setAuthUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(Boolean(supabase));
   const [user, setUser] = useState({
     name: "User",
     email: "daksh@globetrotter.io",
@@ -93,6 +94,7 @@ export function TripProvider({ children }) {
     const loadUserData = async (sessionUser) => {
       if (!sessionUser) {
         setAuthUser(null);
+        setAuthLoading(false);
         return;
       }
       setAuthUser(sessionUser);
@@ -105,6 +107,7 @@ export function TripProvider({ children }) {
       if (profileResult.data) setUser(fromProfileRow(profileResult.data, sessionUser));
       if (tripsResult.data?.length) setTrips(tripsResult.data.map(fromTripRow));
       if (savedResult.data) setSavedDestinations(savedResult.data.map((item) => item.destination_id));
+      setAuthLoading(false);
     };
 
     supabase.auth.getSession().then(({ data }) => loadUserData(data.session?.user));
@@ -143,6 +146,8 @@ export function TripProvider({ children }) {
     () => ({
       trips,
       user,
+      authUser,
+      authLoading,
       setUser: updateUser,
       savedDestinations,
       createTrip,
@@ -153,7 +158,7 @@ export function TripProvider({ children }) {
       getTrip,
       computeTripCost,
     }),
-    [trips, user, savedDestinations, updateUser, createTrip, updateTrip, deleteTrip, duplicateTrip, toggleSaved, getTrip, computeTripCost]
+    [trips, user, authUser, authLoading, savedDestinations, updateUser, createTrip, updateTrip, deleteTrip, duplicateTrip, toggleSaved, getTrip, computeTripCost]
   );
 
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
