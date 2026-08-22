@@ -1,81 +1,193 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
-import TripCard from "@/components/TripCard";
-import { useTrips } from "@/context/TripContext";
+import React, { useState } from 'react';
+import BoardingPassCard from '@/components/BoardingPassCard';
+import FlightPathSVG from '@/components/FlightPathSVG';
+import SplitFlapBoard from '@/components/FlightDeck/SplitFlapBoard';
+import MagneticButton from '@/components/MagneticButton';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
-const FILTERS = ["All", "Upcoming", "Past", "Over Budget"];
+// Mock data
+const TRIPS = [
+  {
+    id: 't1',
+    name: 'Euro Summer',
+    startDate: '12 OCT 2026',
+    endDate: '19 OCT 2026',
+    days: 7,
+    status: 'upcoming',
+    stops: [
+      { px: 0.1, py: 0.5, code: 'LHR' },
+      { px: 0.5, py: 0.4, code: 'CDG' },
+      { px: 0.9, py: 0.6, code: 'BCN' }
+    ]
+  },
+  {
+    id: 't2',
+    name: 'Tokyo Drift',
+    startDate: '04 NOV 2026',
+    endDate: '18 NOV 2026',
+    days: 14,
+    status: 'in-progress',
+    stops: [
+      { px: 0.2, py: 0.6, code: 'SFO' },
+      { px: 0.8, py: 0.4, code: 'TYO' }
+    ]
+  },
+  {
+    id: 't3',
+    name: 'Iceland Ring Road',
+    startDate: '10 JAN 2025',
+    endDate: '20 JAN 2025',
+    days: 10,
+    status: 'completed',
+    stops: [
+      { px: 0.1, py: 0.8, code: 'JFK' },
+      { px: 0.5, py: 0.3, code: 'REY' },
+      { px: 0.9, py: 0.8, code: 'LHR' }
+    ]
+  }
+];
+
+const TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'upcoming', label: 'Upcoming' },
+  { id: 'in-progress', label: 'In Progress' },
+  { id: 'completed', label: 'Completed' }
+];
 
 export default function MyTrips() {
-  const { trips } = useTrips();
-  const [filter, setFilter] = useState("All");
-  const [q, setQ] = useState("");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('all');
+  
+  // To test the empty state, you can toggle this to true in dev
+  const forceEmptyState = false;
 
-  const filtered = trips.filter((t) => {
-    if (filter === "Upcoming" && t.status !== "upcoming") return false;
-    if (filter === "Past" && t.status !== "past") return false;
-    if (filter === "Over Budget" && t.status !== "over-budget") return false;
-    if (q && !t.name.toLowerCase().includes(q.toLowerCase())) return false;
-    return true;
-  });
+  const filteredTrips = forceEmptyState ? [] : TRIPS.filter(t => activeTab === 'all' || t.status === activeTab);
+  const totalTrips = forceEmptyState ? 0 : TRIPS.length;
+
+  const renderStatusPill = (status) => {
+    let bg, text, label;
+    if (status === 'upcoming') {
+      bg = 'bg-[var(--horizon-mint)]/15';
+      text = 'text-[var(--horizon-mint)]';
+      label = 'Upcoming';
+    } else if (status === 'in-progress') {
+      bg = 'bg-[var(--compass-brass)]/15';
+      text = 'text-[var(--compass-brass)]';
+      label = 'In Progress';
+    } else {
+      bg = 'bg-[var(--ink)]/10';
+      text = 'text-[var(--ink)]/60';
+      label = 'Completed';
+    }
+
+    return (
+      <span className={`font-mono text-[11px] px-3 py-1 rounded-full tracking-wider uppercase font-semibold ${bg} ${text}`}>
+        {label}
+      </span>
+    );
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 md:py-14 fade-in">
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-        <div>
-          <div className="eyebrow text-muted-foreground mb-2">Your Journeys</div>
-          <h1 className="font-serif text-4xl md:text-5xl tracking-tight">My Trips</h1>
-          <p className="text-muted-foreground mt-2">{trips.length} trips saved so far.</p>
-        </div>
-        <Link
-          to="/plan"
-          data-testid="new-trip-btn"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-[#1F382A] transition-colors self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" /> New Trip
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[var(--runway-navy)] text-[var(--warm-paper)] flex flex-col fade-in">
+      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-16">
+        
+        {/* Header */}
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="font-serif text-5xl md:text-6xl tracking-tight mb-3">Your trips.</h1>
+            <p className="font-mono text-[var(--compass-brass)] text-xs tracking-[0.2em] uppercase">
+              {totalTrips} {totalTrips === 1 ? 'trip' : 'trips'} planned
+            </p>
+          </div>
+          
+          {/* Tabs */}
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 md:pb-0">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-shrink-0 px-5 py-2 rounded-full font-mono text-[11px] tracking-wider uppercase transition-colors ${
+                  activeTab === tab.id 
+                    ? 'bg-[var(--compass-brass)] text-[var(--runway-navy)] font-bold' 
+                    : 'bg-[var(--deep-navy)] text-[var(--warm-paper)]/70 hover:bg-[var(--deep-navy)]/70'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </header>
 
-      <div className="rounded-2xl bg-white border border-border p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center mb-8">
-        <div className="flex items-center gap-2 border border-border rounded-full px-4 py-2 flex-1">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <input
-            data-testid="trips-search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search your trips..."
-            className="bg-transparent outline-none w-full text-sm"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              data-testid={`filter-${f.toLowerCase().replace(/\s/g, "-")}`}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors ${
-                filter === f ? "bg-primary text-primary-foreground border-primary" : "bg-white border-border hover:bg-secondary"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Content Area */}
+        <div className="flex-1 w-full">
+          {totalTrips === 0 ? (
+            /* ── Global Empty State ── */
+            <div className="h-full min-h-[50vh] flex flex-col items-center justify-center">
+              <div className="mb-12">
+                <SplitFlapBoard 
+                  messages={["NO TRIPS YET", "LET'S CHANGE THAT", "PLAN ONE ->"]} 
+                  scale={0.6} 
+                />
+              </div>
+              <MagneticButton 
+                onClick={() => navigate('/plan')}
+                className="bg-[var(--coral)] text-[var(--warm-paper)] px-8 py-3.5 rounded-full font-semibold text-sm hover:bg-[#E55A3D] transition-colors"
+              >
+                Plan a trip
+              </MagneticButton>
+            </div>
+          ) : filteredTrips.length === 0 ? (
+            /* ── Filter Empty State ── */
+            <div className="py-24 text-center border border-dashed border-[var(--deep-navy)] rounded-3xl">
+              <p className="font-mono text-[var(--warm-paper)]/40 text-sm tracking-widest uppercase">
+                No trips match this filter
+              </p>
+            </div>
+          ) : (
+            /* ── Trip Grid ── */
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {filteredTrips.map(trip => (
+                <div key={trip.id} onClick={() => console.log('Navigate to trip', trip.id)} className="cursor-pointer group">
+                  <BoardingPassCard className="h-full transition-transform duration-300 group-hover:-translate-y-2" style={{ padding: '2rem 1rem 2rem 2.5rem' }}>
+                    
+                    {/* Card Header */}
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <h3 className="font-serif text-[var(--runway-navy)] text-2xl tracking-tight mb-2 group-hover:text-[var(--coral)] transition-colors">
+                          {trip.name}
+                        </h3>
+                        <div className="flex items-center gap-4">
+                          <span className="font-mono text-[var(--ink)]/60 text-xs tracking-widest uppercase">
+                            {trip.startDate} – {trip.endDate}
+                          </span>
+                          <span className="font-mono text-[var(--compass-brass)] font-bold text-xs bg-[var(--compass-brass)]/10 px-2 py-1 rounded-sm">
+                            {trip.days} DAYS
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        {renderStatusPill(trip.status)}
+                      </div>
+                    </div>
+                    
+                    {/* Static Map Thumbnail */}
+                    <div className="w-full h-[60px] my-8 opacity-70 group-hover:opacity-100 transition-opacity">
+                      <FlightPathSVG stops={trip.stops} animated={false} />
+                    </div>
 
-      {filtered.length ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((t) => <TripCard key={t.id} trip={t} />)}
+                    {/* Footer link */}
+                    <div className="flex items-center text-[var(--coral)] font-semibold text-sm gap-2 border-t border-dashed border-[var(--ink)]/10 pt-4 mt-auto">
+                      View itinerary <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </BoardingPassCard>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="rounded-3xl border border-dashed border-border p-16 text-center">
-          <h3 className="font-serif text-2xl mb-2">Nothing here yet</h3>
-          <p className="text-muted-foreground mb-6">Start planning to see your trips populate this space.</p>
-          <Link to="/plan" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-[#1F382A] transition-colors">
-            <Plus className="w-4 h-4" /> Create a Trip
-          </Link>
-        </div>
-      )}
+      </main>
+
     </div>
   );
 }

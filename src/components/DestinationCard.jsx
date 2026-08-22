@@ -2,13 +2,13 @@ import { Star, MapPin, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTrips } from "@/context/TripContext";
 
-export default function DestinationCard({ d, compact = false, onExplore }) {
+export default function DestinationCard({ d, compact = false, onExplore, className = "" }) {
   const { savedDestinations, toggleSaved } = useTrips();
   const saved = savedDestinations.includes(d.id);
   return (
     <div
       data-testid={`destination-card-${d.id}`}
-      className={`group relative overflow-hidden rounded-3xl bg-white border border-border hover-lift ${compact ? "" : "h-full"}`}
+      className={`group relative overflow-hidden rounded-3xl bg-white border border-border hover-lift fade-in-up ${compact ? "" : "h-full"} ${className}`.trim()}
     >
       <div className="relative aspect-[4/5] overflow-hidden">
         <img

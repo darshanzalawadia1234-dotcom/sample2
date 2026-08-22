@@ -7,7 +7,7 @@ export function TripProvider({ children }) {
   const [trips, setTrips] = useState(INITIAL_TRIPS);
   const [savedDestinations, setSavedDestinations] = useState(SAVED_DESTINATION_IDS);
   const [user, setUser] = useState({
-    name: "Daksh",
+    name: "User",
     email: "daksh@globetrotter.io",
     language: "English",
     photo: "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=200&q=80",

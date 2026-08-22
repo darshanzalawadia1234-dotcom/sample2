@@ -1,0 +1,207 @@
+/* =============================================================
+   GlobeTrotter — Animation Library
+   Import this file in your project (e.g. in index.jsx: import "./animations.css")
+   Then add the class names below to any element you want animated.
+   ============================================================= */
+
+/* -------------------- Fade -------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fade-in { animation: fadeIn 0.6s ease forwards; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.7s ease forwards; }
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-down { animation: fadeInDown 0.7s ease forwards; }
+
+/* -------------------- Slide -------------------- */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-left { animation: slideInLeft 0.6s ease-out forwards; }
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in-right { animation: slideInRight 0.6s ease-out forwards; }
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-in-up { animation: slideInUp 0.6s ease-out forwards; }
+
+/* -------------------- Scale / Zoom -------------------- */
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.zoom-in { animation: zoomIn 0.5s ease forwards; }
+
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.6); }
+  70%  { opacity: 1; transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.pop-in { animation: popIn 0.5s cubic-bezier(0.26, 1.36, 0.55, 1) forwards; }
+
+/* -------------------- Attention Seekers -------------------- */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+.pulse { animation: pulse 1.8s ease-in-out infinite; }
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-16px); }
+  60% { transform: translateY(-8px); }
+}
+.bounce { animation: bounce 1.6s ease infinite; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake { animation: shake 0.5s ease; }
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-4deg); }
+  75%      { transform: rotate(4deg); }
+}
+.wiggle:hover { animation: wiggle 0.4s ease; }
+
+/* -------------------- Rotate -------------------- */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin { animation: spin 1.2s linear infinite; }
+
+@keyframes rotateIn {
+  from { opacity: 0; transform: rotate(-15deg) scale(0.9); }
+  to   { opacity: 1; transform: rotate(0) scale(1); }
+}
+.rotate-in { animation: rotateIn 0.6s ease forwards; }
+
+/* -------------------- Floating (great for travel icons/images) ------- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-12px); }
+}
+.float { animation: float 3s ease-in-out infinite; }
+
+/* -------------------- Gradient background shift ------------------- */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-bg {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* -------------------- Hover Interactions -------------------- */
+.hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.hover-grow {
+  transition: transform 0.25s ease;
+}
+.hover-grow:hover { transform: scale(1.05); }
+
+.hover-underline {
+  position: relative;
+}
+.hover-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 2px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+.hover-underline:hover::after { width: 100%; }
+
+/* -------------------- Typewriter text effect ------------------- */
+@keyframes typing {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+@keyframes blinkCursor {
+  50% { border-color: transparent; }
+}
+.typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid currentColor;
+  animation: typing 3s steps(30, end) forwards,
+             blinkCursor 0.75s step-end infinite;
+}
+
+/* -------------------- Loading spinner ------------------- */
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* -------------------- Scroll reveal helper -------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* -------------------- Utility: stagger children -------------------- */
+.stagger > * {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.15s; }
+.stagger > *:nth-child(3) { animation-delay: 0.25s; }
+.stagger > *:nth-child(4) { animation-delay: 0.35s; }
+.stagger > *:nth-child(5) { animation-delay: 0.45s; }
+.stagger > *:nth-child(6) { animation-delay: 0.55s; }
+.stagger > *:nth-child(7) { animation-delay: 0.65s; }
+.stagger > *:nth-child(8) { animation-delay: 0.75s; }
+
+/* -------------------- Respect reduced motion -------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

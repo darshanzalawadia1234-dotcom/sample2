@@ -5,7 +5,7 @@ import { TripProvider } from "@/context/TripContext";
 import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
-import CreateTrip from "@/pages/CreateTrip";
+import PlanTrip from "@/pages/PlanTrip";
 import MyTrips from "@/pages/MyTrips";
 import Explore from "@/pages/Explore";
 import ItineraryBuilder from "@/pages/ItineraryBuilder";
@@ -23,7 +23,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/plan" element={<CreateTrip />} />
+              <Route path="/plan" element={<PlanTrip />} />
               <Route path="/trips" element={<MyTrips />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/trip/:id/build" element={<ItineraryBuilder />} />
