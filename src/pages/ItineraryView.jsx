@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
-import { Calendar as CalIcon, List, Map as MapIcon, Wallet, Users, MapPin, Clock, Share2, Sun, CloudRain, Cloud } from "lucide-react";
+import { Calendar as CalIcon, List, Map as MapIcon, Wallet, Users, MapPin, Clock, Share2, Sun, CloudRain, Cloud, Thermometer } from "lucide-react";
 import { useTrips } from "@/context/TripContext";
 import { findActivity, findDestination, formatDateRange, computeDays } from "@/data/mockData";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import MapView from "@/components/MapView";
 import { BudgetDonut, BudgetBar } from "@/components/BudgetChart";
+import { fetchWeatherForecast } from "@/lib/weather";
 
 const TIME_OF_DAY = (t) => {
   const h = parseInt(t.split(":")[0], 10);
@@ -89,99 +90,136 @@ function Timeline({ trip, days }) {
   return (
     <div className="grid md:grid-cols-[1fr_320px] gap-6">
       <div className="space-y-6">
-        {days.map((day, di) => {
-          const w = WEATHER[di % WEATHER.length];
-          return (
-            <div key={day.date} className="rounded-3xl bg-white border border-border overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAF9F6]">
-                <div>
-                  <div className="eyebrow text-muted-foreground">Day {di + 1}</div>
-                  <div className="flex items-baseline gap-3 mt-1">
-                    <span className="font-serif text-2xl">{new Date(day.date).toLocaleDateString("en-US", { month: "long", day: "numeric" })}</span>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{day.city}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <w.icon className="w-5 h-5 text-accent" />
-                  <span>{w.temp}°C {w.cond}</span>
-                </div>
-              </div>
-              <div className="p-6 space-y-4">
-                {Object.entries(groupByTime(day.blocks)).map(([slot, blocks]) => (
-                  <div key={slot}>
-                    <div className="eyebrow text-muted-foreground mb-3">{slot}</div>
-                    <div className="space-y-3">
-                      {blocks.map((b, bi) => {
-                        const a = findActivity(b.city, b.activityId) || findActivity(trip.stops[0].destinationId, b.activityId);
-                        if (!a) return null;
-                        return (
-                          <div key={bi} className="flex gap-4">
-                            <div className="w-16 text-right">
-                              <div className="font-serif text-lg">{b.time}</div>
-                            </div>
-                            <div className="w-px bg-border relative">
-                              <div className="w-2 h-2 rounded-full bg-primary absolute -left-[3px] top-2" />
-                            </div>
-                            <div className="flex-1 pb-2">
-                              <div className="font-serif text-lg">{a.name}</div>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                                <span className="px-2 py-0.5 rounded-full bg-[#FBF0E1] font-semibold uppercase tracking-widest text-[10px]">{a.category}</span>
-                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {a.duration}h</span>
-                                <span>{a.cost === 0 ? "Free" : `₹${a.cost.toLocaleString()}`}</span>
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">{a.description}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
+        {days.map((day, di) => (
+          <DayTimelineCard key={day.date} trip={trip} day={day} di={di} />
+        ))}
+      </div>
+      <div className="space-y-6">
+        <BudgetSnap trip={trip} days={days} />
+      </div>
+    </div>
+  );
+}
+
+function DayTimelineCard({ trip, day, di }) {
+  const defaultWeather = WEATHER[di % WEATHER.length];
+  const [weather, setWeather] = useState({
+    temp: defaultWeather.temp,
+    cond: defaultWeather.cond,
+    icon: defaultWeather.icon,
+  });
+
+  useEffect(() => {
+    const dest = findDestination(day.city?.toLowerCase()) || findDestination(trip.stops[0]?.destinationId);
+    const lat = dest?.lat || 52.52;
+    const lng = dest?.lng || 13.41;
+
+    fetchWeatherForecast(lat, lng).then((forecast) => {
+      if (forecast && forecast.currentTemp !== undefined) {
+        setWeather({
+          temp: forecast.currentTemp,
+          cond: forecast.cond,
+          icon: forecast.currentTemp > 25 ? Sun : forecast.currentTemp > 18 ? Cloud : CloudRain,
+        });
+      }
+    });
+  }, [day.city, trip.stops]);
+
+  const WeatherIcon = weather.icon;
+
+  return (
+    <div className="rounded-3xl bg-white border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#FAF9F6]">
+        <div>
+          <div className="eyebrow text-muted-foreground">Day {di + 1}</div>
+          <div className="flex items-baseline gap-3 mt-1">
+            <span className="font-serif text-2xl">{new Date(day.date).toLocaleDateString("en-US", { month: "long", day: "numeric" })}</span>
+            <span className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{day.city}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm bg-white border border-border px-3 py-1.5 rounded-full shadow-xs">
+          <WeatherIcon className="w-4 h-4 text-[#B8862F]" />
+          <span className="font-semibold text-xs">{weather.temp}°C</span>
+          <span className="text-xs text-muted-foreground">{weather.cond}</span>
+        </div>
+      </div>
+      <div className="p-6 space-y-4">
+        {Object.entries(groupByTime(day.blocks)).map(([slot, blocks]) => (
+          <div key={slot}>
+            <div className="eyebrow text-muted-foreground mb-3">{slot}</div>
+            <div className="space-y-3">
+              {blocks.map((b, bi) => {
+                const a = findActivity(b.city, b.activityId) || findActivity(trip.stops[0].destinationId, b.activityId);
+                if (!a) return null;
+                return (
+                  <div key={bi} className="flex gap-4">
+                    <div className="w-16 text-right">
+                      <div className="font-serif text-lg">{b.time}</div>
+                    </div>
+                    <div className="w-px bg-border relative">
+                      <div className="w-2 h-2 rounded-full bg-primary absolute -left-[3px] top-2" />
+                    </div>
+                    <div className="flex-1 pb-2">
+                      <div className="font-serif text-lg">{a.name}</div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                        <span className="px-2 py-0.5 rounded-full bg-[#FBF0E1] font-semibold uppercase tracking-widest text-[10px]">{a.category}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {a.duration}h</span>
+                        <span>{a.cost === 0 ? "Free" : `₹${a.cost.toLocaleString()}`}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">{a.description}</p>
                     </div>
                   </div>
-                ))}
-                {day.blocks.length === 0 && (
-                  <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                    Nothing planned yet. <Link to={`/trip/${trip.id}/build`} className="text-primary font-semibold">Add activities →</Link>
-                  </div>
-                )}
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {day.blocks.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+            Nothing planned yet. <Link to={`/trip/${trip.id}/build`} className="text-primary font-semibold">Add activities →</Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BudgetSnap({ trip, days }) {
+  return (
+    <aside className="space-y-4">
+      <div className="rounded-3xl bg-white border border-border p-5">
+        <div className="eyebrow text-muted-foreground mb-3">Multi-City Journey</div>
+        {trip.stops.map((s, i) => {
+          const d = findDestination(s.destinationId);
+          return (
+            <div key={s.destinationId} className="flex items-center gap-3 py-2">
+              <span className="w-6 h-6 rounded-full bg-primary text-white grid place-items-center text-xs font-bold">{i + 1}</span>
+              <div className="flex-1">
+                <div className="text-sm font-semibold">{d?.city || s.destinationId}</div>
+                <div className="text-xs text-muted-foreground">{s.nights} nights</div>
               </div>
             </div>
           );
         })}
       </div>
-      <aside className="space-y-4">
-        <div className="rounded-3xl bg-white border border-border p-5">
-          <div className="eyebrow text-muted-foreground mb-3">Multi-City Journey</div>
-          {trip.stops.map((s, i) => {
-            const d = findDestination(s.destinationId);
+      <div className="rounded-3xl bg-white border border-border p-5">
+        <div className="eyebrow text-muted-foreground mb-3">Weather Forecast</div>
+        <div className="space-y-2">
+          {days.slice(0, 4).map((day, i) => {
+            const w = WEATHER[i % WEATHER.length];
             return (
-              <div key={s.destinationId} className="flex items-center gap-3 py-2">
-                <span className="w-6 h-6 rounded-full bg-primary text-white grid place-items-center text-xs font-bold">{i + 1}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">{d.city}</div>
-                  <div className="text-xs text-muted-foreground">{s.nights} nights</div>
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{new Date(day.date).toLocaleDateString("en-US", { weekday: "short", day: "numeric" })}</span>
+                <div className="flex items-center gap-2">
+                  <w.icon className="w-4 h-4 text-accent" />
+                  <span>{w.temp}°C</span>
                 </div>
               </div>
             );
           })}
         </div>
-        <div className="rounded-3xl bg-white border border-border p-5">
-          <div className="eyebrow text-muted-foreground mb-3">Weather Forecast</div>
-          <div className="space-y-2">
-            {days.slice(0, 4).map((day, i) => {
-              const w = WEATHER[i % WEATHER.length];
-              return (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{new Date(day.date).toLocaleDateString("en-US", { weekday: "short", day: "numeric" })}</span>
-                  <div className="flex items-center gap-2">
-                    <w.icon className="w-4 h-4 text-accent" />
-                    <span>{w.temp}°C</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </aside>
-    </div>
+      </div>
+    </aside>
   );
 }
 
