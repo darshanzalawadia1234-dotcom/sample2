@@ -2,25 +2,43 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Lock, Mail, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-    toast.success("Logged in successfully!");
-    navigate("/");
+
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Logged in successfully!");
+      navigate("/");
+    }
   };
 
-  const handleSocialLogin = (provider) => {
-    toast.success(`Logged in with ${provider}`);
-    navigate("/");
+  const handleSocialLogin = async (provider) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+    });
+    if (error) {
+      toast.error(error.message);
+    }
   };
 
   return (

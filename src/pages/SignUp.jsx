@@ -2,26 +2,49 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Lock, Mail, User, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-    toast.success("Account created successfully!");
-    navigate("/");
+
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Account created! Check your email to verify.");
+      navigate("/");
+    }
   };
 
-  const handleSocialSignUp = (provider) => {
-    toast.success(`Signed up with ${provider}`);
-    navigate("/");
+  const handleSocialSignUp = async (provider) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+    });
+    if (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
