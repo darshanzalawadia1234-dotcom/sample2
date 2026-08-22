@@ -1,3 +1,7 @@
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import Lenis from "lenis";
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SplitFlapBoard from './SplitFlapBoard';
@@ -82,11 +86,6 @@ export default function FlightDeck() {
 
     let gsapCtx, lenis;
     const init = async () => {
-      const { gsap } = await import('gsap');
-      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
-      const { MotionPathPlugin } = await import('gsap/MotionPathPlugin');
-      const Lenis = (await import('lenis')).default;
-
       gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
       const updateSize = () => {
