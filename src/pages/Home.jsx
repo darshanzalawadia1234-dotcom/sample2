@@ -57,14 +57,25 @@ export default function Home() {
     <div className="fade-in bg-[var(--warm-paper)]">
       {/* ── 1. Hero ────────────────────────────────────────────────────────── */}
       <section className="bg-[var(--runway-navy)] pt-32 pb-20 relative overflow-hidden text-[var(--warm-paper)]">
-        {/* Animated Aurora Background */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {/* Glowing orbs */}
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[var(--coral)]/20 blur-[120px] rounded-full mix-blend-screen animate-blob"></div>
-          <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-[var(--compass-brass)]/20 blur-[130px] rounded-full mix-blend-screen animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] bg-[var(--horizon-mint)]/20 blur-[100px] rounded-full mix-blend-screen animate-blob animation-delay-4000"></div>
+
+        {/* Eye-Catching Animated Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <style>{`
+            @keyframes slowZoom {
+              0% { transform: scale(1.05) translate(0, 0); }
+              50% { transform: scale(1.1) translate(-1%, 1%); }
+              100% { transform: scale(1.05) translate(0, 0); }
+            }
+          `}</style>
+          <img
+            src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2000&auto=format&fit=crop"
+            alt="Travel Landscape"
+            className="w-full h-full object-cover opacity-[0.25]"
+            style={{ animation: 'slowZoom 30s ease-in-out infinite' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--runway-navy)] via-[var(--runway-navy)]/60 to-transparent" />
           
-          <svg viewBox="0 0 1440 600" className="w-full h-full object-cover opacity-[0.05]">
+          <svg viewBox="0 0 1440 600" className="absolute inset-0 w-full h-full object-cover opacity-[0.05]">
             <path d="M 0,300 C 300,100 600,500 1440,200" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="10 10" />
             <path d="M 0,400 C 400,600 800,100 1440,300" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="5 15" />
           </svg>

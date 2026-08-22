@@ -21,33 +21,70 @@ const INITIAL_ITINERARY = [
   { id: 'day2', day: 2, title: 'Museum District', desc: 'Visit main galleries and monuments.' },
   { id: 'day3', day: 3, title: 'Local Cuisine Tour', desc: 'Tasting menu and market visits.' },
 ];
-
 export default function PlanTrip() {
-  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(1);
   const [slideDir, setSlideDir] = useState('right');
-
-  // Form State
-  const [searchQ, setSearchQ] = useState('');
   const [destinations, setDestinations] = useState([]);
+  const [searchQ, setSearchQ] = useState('');
   const [dates, setDates] = useState({ start: '', end: '' });
-  const [itinerary, setItinerary] = useState(INITIAL_ITINERARY);
+  const [itinerary, setItinerary] = useState([]);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Auto-fill dates string for the UI
-  const dateString = dates.start && dates.end ? `${dates.start.replace(/-/g, '/')} – ${dates.end.replace(/-/g, '/')} · 7 DAYS` : '';
+  const dateString = dates.start && dates.end ? `${dates.start.replace(/-/g, '/')} – ${dates.end.replace(/-/g, '/')} · ${Math.ceil((new Date(dates.end) - new Date(dates.start)) / (1000 * 60 * 60 * 24) + 1)} DAYS` : '';
 
   const goToStep = (step) => {
     if (step === activeStep) return;
+    setError(null);
     setSlideDir(step > activeStep ? 'right' : 'left');
     setActiveStep(step);
   };
 
-  const handleNext = () => goToStep(Math.min(4, activeStep + 1));
+  const handleNext = () => {
+    setError(null);
+
+    if (activeStep === 1) {
+      if (destinations.length === 0) {
+        setError("Please select at least one destination.");
+        return;
+      }
+      setActiveStep(2);
+    }
+    else if (activeStep === 2) {
+      if (!dates.start || !dates.end) {
+        setError("Please select both a departure and return date.");
+        return;
+      }
+      const dStart = new Date(dates.start);
+      const dEnd = new Date(dates.end);
+      if (dStart > dEnd) {
+        setError("Return date cannot be before departure date.");
+        return;
+      }
+      const days = Math.ceil((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1;
+
+      // Auto-generate mock itinerary based on selected days
+      const newItinerary = Array.from({ length: days }).map((_, i) => ({
+        id: `day-${i+1}`,
+        day: i + 1,
+        title: i === 0 ? `Arrival in ${destinations[0]}` : i === days - 1 ? 'Departure' : `Explore ${destinations[Math.min(i, destinations.length-1)]}`,
+        desc: 'Planned activities will appear here.',
+      }));
+      setItinerary(newItinerary);
+      setActiveStep(3);
+    }
+    else if (activeStep < 4) {
+      setActiveStep(s => s + 1);
+    }
+  };
+
   const handleBack = () => goToStep(Math.max(1, activeStep - 1));
 
   const addDestination = (dest) => {
     if (!destinations.includes(dest)) setDestinations([...destinations, dest]);
     setSearchQ('');
+    setError(null);
   };
 
   const removeDestination = (dest) => {
@@ -125,18 +162,34 @@ export default function PlanTrip() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--warm-paper)] text-[var(--ink)] flex flex-col fade-in overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--warm-paper)] text-[var(--ink)] flex flex-col fade-in overflow-x-hidden relative">
       <style>{`
         .slide-enter {
           animation: slideIn 0.3s ease-out forwards;
         }
         @keyframes slideIn {
-          from { opacity: 0; transform: translateX(var(--slide-offset)); }
-          to { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(20px) }
+          to { opacity: 1; transform: translateX(0) }
+        }
+        @keyframes floatBg {
+          0% { transform: scale(1.05) translate(0, 0); }
+          50% { transform: scale(1.1) translate(-1%, 1%); }
+          100% { transform: scale(1.05) translate(0, 0); }
         }
       `}</style>
 
-      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-12">
+      {/* ── Eye-Catching Animated Background ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img
+          src="https://images.unsplash.com/photo-1499696229447-0d0ea3dd88e8?q=80&w=2000&auto=format&fit=crop"
+          alt="Cloud Background"
+          className="w-full h-full object-cover opacity-20 mix-blend-multiply"
+          style={{ animation: 'floatBg 40s ease-in-out infinite' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--warm-paper)] via-[var(--warm-paper)]/80 to-[var(--warm-paper)]/40" />
+      </div>
+
+      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-12 relative z-10">
         {renderStepIndicator()}
 
         <div 
@@ -186,6 +239,7 @@ export default function PlanTrip() {
                 ))}
               </div>
 
+              {error && <div className="text-red-500 text-sm mt-4">{error}</div>}
               <div className="pt-8">
                 <MagneticButton onClick={handleNext} className={`w-full py-4 rounded-xl font-semibold text-sm transition-colors ${destinations.length > 0 ? 'bg-[var(--coral)] text-white hover:bg-[#E55A3D]' : 'bg-[var(--deep-navy)]/10 text-[var(--ink)]/40 cursor-not-allowed'}`}>
                   Continue
@@ -219,6 +273,7 @@ export default function PlanTrip() {
                 </div>
               )}
 
+              {error && <div className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>}
               <div className="pt-8 flex gap-4">
                 <button onClick={handleBack} className="px-8 py-4 rounded-xl font-semibold text-sm bg-white border border-[var(--deep-navy)]/10 hover:bg-gray-50 transition-colors">Back</button>
                 <MagneticButton onClick={handleNext} className="flex-1 py-4 rounded-xl font-semibold text-sm bg-[var(--coral)] text-white hover:bg-[#E55A3D] transition-colors">
@@ -240,6 +295,7 @@ export default function PlanTrip() {
                 <BudgetDial theme="light" />
               </div>
 
+              {error && <div className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>}
               <div className="pt-8 flex gap-4">
                 <button onClick={handleBack} className="px-8 py-4 rounded-xl font-semibold text-sm bg-white border border-[var(--deep-navy)]/10 hover:bg-gray-50 transition-colors">Back</button>
                 <MagneticButton onClick={handleNext} className="flex-1 py-4 rounded-xl font-semibold text-sm bg-[var(--coral)] text-white hover:bg-[#E55A3D] transition-colors">
@@ -296,6 +352,7 @@ export default function PlanTrip() {
                 </div>
               </BoardingPassCard>
 
+              {error && <div className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>}
               <div className="pt-8 flex gap-4">
                 <button onClick={handleBack} className="px-8 py-4 rounded-xl font-semibold text-sm bg-white border border-[var(--deep-navy)]/10 hover:bg-gray-50 transition-colors">Back</button>
                 <MagneticButton onClick={() => navigate('/trips')} className="flex-1 py-4 rounded-xl font-semibold text-sm bg-[var(--coral)] text-white hover:bg-[#E55A3D] transition-colors inline-flex justify-center items-center gap-2">

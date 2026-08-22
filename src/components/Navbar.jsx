@@ -28,13 +28,14 @@ export default function Navbar() {
   // Plan page is light theme, others are dark theme
   const isLight = location.pathname === '/plan';
   
-  const navBg = isLight ? "bg-white/60 border-black/10" : "bg-[var(--runway-navy)]/40 border-white/10";
-  const textColor = isLight ? "text-black" : "text-white";
-  const hoverBg = isLight ? "hover:bg-black/5" : "hover:bg-white/10";
-  const activeBg = isLight ? "bg-black text-white" : "bg-white text-black";
+  // Use solid backgrounds so scrolling headings don't clash with nav links
+  const navBg = isLight ? "bg-[var(--warm-paper)] border-[var(--ink)]/10" : "bg-[var(--runway-navy)] border-white/10";
+  const textColor = isLight ? "text-[var(--ink)]" : "text-white";
+  const hoverBg = isLight ? "hover:bg-[var(--ink)]/5" : "hover:bg-white/10";
+  const activeBg = isLight ? "bg-[var(--ink)] text-[var(--warm-paper)]" : "bg-white text-[var(--runway-navy)]";
 
   return (
-    <header className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-colors duration-300 ${navBg} ${textColor}`}>
+    <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${navBg} ${textColor}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         <Link to="/" data-testid="brand-logo" className="flex items-center gap-2 group">
           <Globe2 className={`w-6 h-6 transition-transform group-hover:rotate-12 ${isLight ? 'text-[var(--coral)]' : 'text-[var(--compass-brass)]'}`} strokeWidth={1.5} />
@@ -76,7 +77,7 @@ export default function Navbar() {
                 <span className="text-sm font-medium">{user.name}</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white/90 backdrop-blur-xl border-white/20">
+            <DropdownMenuContent align="end" className="w-56 bg-white/90 border-white/20">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/dashboard")}>Dashboard</DropdownMenuItem>
@@ -98,7 +99,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className={`md:hidden border-t backdrop-blur-xl ${navBg}`}>
+        <div className={`md:hidden border-t ${navBg}`}>
           <div className="px-4 py-3 flex flex-col gap-1">
             {links.map((l) => (
               <NavLink

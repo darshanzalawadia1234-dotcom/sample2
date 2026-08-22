@@ -16,39 +16,56 @@ const REGION_MAP = {
   'Oceania': ['AU', 'NZ', 'FJ']
 };
 
-const ALL_DESTINATIONS = [
-  { id: 'goa', name: 'Goa', countryCode: 'IN', country: 'India', img: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=600&auto=format&fit=crop', tagline: 'Coastal Paradise' },
-  { id: 'paris', name: 'Paris', countryCode: 'FR', country: 'France', img: 'https://images.unsplash.com/photo-1502602881469-447826049f4b?q=80&w=600&auto=format&fit=crop', tagline: 'City of Light' },
-  { id: 'tokyo', name: 'Tokyo', countryCode: 'JP', country: 'Japan', img: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=600&auto=format&fit=crop', tagline: 'Neon & Tradition' },
-  { id: 'dubai', name: 'Dubai', countryCode: 'AE', country: 'UAE', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=600&auto=format&fit=crop', tagline: 'Desert Metropolis' },
-  { id: 'barcelona', name: 'Barcelona', countryCode: 'ES', country: 'Spain', img: 'https://images.unsplash.com/photo-1583422409516-15eba5349274?q=80&w=600&auto=format&fit=crop', tagline: 'Gaudí & Tapas' },
-  { id: 'capetown', name: 'Cape Town', countryCode: 'ZA', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?q=80&w=600&auto=format&fit=crop', tagline: 'Mountain & Sea' },
-];
-
-
 export default function Explore() {
   const [activeRegion, setActiveRegion] = useState('All');
   const [selectedCountry, setSelectedCountry] = useState(null); // ISO alpha-2
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const gridRef = useRef(null);
 
+  useEffect(() => {
+    fetch('https://restcountries.com/v3.1/all?fields=name,cca2,capital,region,flags')
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data
+          .filter(c => c.capital && c.capital.length > 0)
+          .map(c => ({
+            id: c.cca2,
+            name: c.capital[0],
+            countryCode: c.cca2,
+            country: c.name.common,
+            img: c.flags.svg, // Using flag as placeholder image
+            tagline: c.region
+          }))
+          // Sort alphabetically by country name for consistency
+          .sort((a, b) => a.country.localeCompare(b.country));
+        setDestinations(mapped);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch destinations", err);
+        setLoading(false);
+      });
+  }, []);
+
   const filteredDestinations = useMemo(() => {
-    let filtered = ALL_DESTINATIONS;
+    let filtered = destinations;
     if (selectedCountry) {
-      filtered = filtered.filter(d => d.countryCode === selectedCountry);
+      filtered = filtered.filter(d => d.country === selectedCountry);
     } else if (activeRegion !== 'All') {
       const allowedCodes = REGION_MAP[activeRegion] || [];
       filtered = filtered.filter(d => allowedCodes.includes(d.countryCode));
     }
     return filtered;
-  }, [activeRegion, selectedCountry]);
+  }, [activeRegion, selectedCountry, destinations]);
 
   const handleCountryClick = (geo) => {
-    const code = geo.properties.iso_a2;
+    const name = geo.properties.name;
     // Toggle selection
-    if (selectedCountry === code) {
+    if (selectedCountry === name) {
       setSelectedCountry(null);
     } else {
-      setSelectedCountry(code);
+      setSelectedCountry(name);
       setActiveRegion('All'); // Clear region when country selected
       
       // Scroll to grid with slight offset
@@ -107,8 +124,8 @@ export default function Explore() {
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const code = geo.properties.iso_a2;
-                const isSelected = selectedCountry === code;
+                const name = geo.properties.name;
+                const isSelected = selectedCountry === name;
                 return (
                   <Geography
                     key={geo.rsmKey}

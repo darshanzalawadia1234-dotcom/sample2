@@ -89,8 +89,28 @@ export default function MyTrips() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--runway-navy)] text-[var(--warm-paper)] flex flex-col fade-in">
-      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-16">
+    <div className="min-h-screen bg-[var(--runway-navy)] text-[var(--warm-paper)] flex flex-col fade-in relative overflow-hidden">
+
+      {/* ── Eye-Catching Animated Background ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <style>{`
+          @keyframes slowPan {
+            0% { transform: scale(1.1) translate(0, 0); }
+            50% { transform: scale(1.15) translate(-1%, 2%); }
+            100% { transform: scale(1.1) translate(0, 0); }
+          }
+        `}</style>
+        <img
+          src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop"
+          alt="Travel Background"
+          className="w-full h-full object-cover opacity-[0.15]"
+          style={{ animation: 'slowPan 40s ease-in-out infinite' }}
+        />
+        {/* Gradient overlay to ensure text remains perfectly readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--runway-navy)]/60 via-[var(--runway-navy)]/80 to-[var(--runway-navy)]" />
+      </div>
+
+      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-16 relative z-10">
         
         {/* Header */}
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
