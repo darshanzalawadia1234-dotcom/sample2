@@ -48,9 +48,14 @@ export function TripProvider({ children }) {
     }
   }, [authUser]);
 
-  const duplicateTrip = useCallback((id) => {
+  const duplicateTrip = useCallback((idOrTrip) => {
     setTrips((prev) => {
-      const src = prev.find((t) => t.id === id);
+      let src;
+      if (typeof idOrTrip === 'string') {
+        src = prev.find((t) => t.id === idOrTrip);
+      } else {
+        src = idOrTrip;
+      }
       if (!src) return prev;
       const copy = { ...src, id: `trip-${Date.now()}`, name: `${src.name} (Copy)`, status: "upcoming" };
       if (supabase && authUser) {
@@ -105,7 +110,7 @@ export function TripProvider({ children }) {
       ]);
       if (!active) return;
       if (profileResult.data) setUser(fromProfileRow(profileResult.data, sessionUser));
-      if (tripsResult.data?.length) setTrips(tripsResult.data.map(fromTripRow));
+      if (tripsResult.data) setTrips(tripsResult.data.map(fromTripRow));
       if (savedResult.data) setSavedDestinations(savedResult.data.map((item) => item.destination_id));
       setAuthLoading(false);
     };

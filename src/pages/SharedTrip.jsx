@@ -1,18 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
-import { Copy, Link2, Share2, Users, Calendar as CalIcon, Wallet, MapPin, Clock } from "lucide-react";
+import { Copy, Link2, Share2, Users, Calendar as CalIcon, Wallet, MapPin, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTrips } from "@/context/TripContext";
 import { findActivity, findDestination, formatDateRange, computeDays } from "@/data/mockData";
 import { BudgetDonut } from "@/components/BudgetChart";
 import MapView from "@/components/MapView";
+import { supabase } from "@/lib/supabase";
 
 export default function SharedTrip() {
   const { id } = useParams();
   const { getTrip, duplicateTrip } = useTrips();
-  const trip = getTrip(id);
+  const localTrip = getTrip(id);
+  const [trip, setTrip] = useState(localTrip);
+  const [loading, setLoading] = useState(!localTrip);
+  const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
-  if (!trip) return <Navigate to="/trips" />;
+
+  useEffect(() => {
+    if (!localTrip) {
+      // Fetch from Supabase
+      supabase.from("trips").select("*").eq("id", id).maybeSingle().then(({ data, error }) => {
+        if (error || !data) {
+          setError(true);
+        } else {
+          setTrip({
+            ...data,
+            startDate: data.start_date,
+            endDate: data.end_date,
+            estimatedCost: data.estimated_cost
+          });
+        }
+        setLoading(false);
+      });
+    }
+  }, [id, localTrip]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center fade-in">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !trip) return <Navigate to="/trips" />;
 
   const publicUrl = `${window.location.origin}/share/${trip.id}`;
   const copy = () => {
@@ -23,7 +55,7 @@ export default function SharedTrip() {
   };
 
   const copyTrip = () => {
-    duplicateTrip(trip.id);
+    duplicateTrip(trip);
     toast.success("Trip copied to your account");
   };
 
