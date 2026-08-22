@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Save, Share2, Sparkles, Plus, X, Clock, MapPin, Trash2, Search, Filter, GripVertical, ArrowUp, ArrowDown, Map as MapIcon } from "lucide-react";
@@ -6,6 +6,7 @@ import { useTrips } from "@/context/TripContext";
 import { ACTIVITIES, findActivity, findDestination, formatDateRange, computeDays } from "@/data/mockData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import MapView from "@/components/MapView";
+import { searchPlaces } from "@/lib/geoapify";
 
 export default function ItineraryBuilder() {
   const { id } = useParams();
@@ -187,15 +188,41 @@ function Row({ label, value }) {
 function ActivitySearch({ city, onAdd, onClose }) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("All");
+  const [livePlaces, setLivePlaces] = useState([]);
+
+  useEffect(() => {
+    const dest = findDestination(city?.toLowerCase());
+    if (dest?.lat && dest?.lng) {
+      searchPlaces('tourism,catering,entertainment,commercial', dest.lat, dest.lng, 8000).then((places) => {
+        if (places && places.length > 0) {
+          const mapped = places.map((p) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category.includes('catering') ? 'Food' : p.category.includes('tourism') ? 'Sightseeing' : 'Culture',
+            cost: 500,
+            duration: 2,
+            rating: 4.6,
+            image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
+            description: p.address || "Popular local point of interest and attraction.",
+          }));
+          setLivePlaces(mapped);
+        }
+      });
+    }
+  }, [city]);
+
   const list = useMemo(() => {
-    const base = ACTIVITIES[city] || Object.values(ACTIVITIES).flat();
-    return base.filter((a) => {
+    const base = [...(ACTIVITIES[city] || Object.values(ACTIVITIES).flat()), ...livePlaces];
+    // Remove duplicates by name
+    const unique = base.filter((item, idx, self) => idx === self.findIndex((t) => t.name === item.name));
+    return unique.filter((a) => {
       if (q && !a.name.toLowerCase().includes(q.toLowerCase())) return false;
       if (cat !== "All" && a.category !== cat) return false;
       return true;
     });
-  }, [city, q, cat]);
-  const cats = ["All", ...new Set(Object.values(ACTIVITIES).flat().map((a) => a.category))];
+  }, [city, q, cat, livePlaces]);
+
+  const cats = ["All", "Sightseeing", "Food", "Culture", "History", "Adventure"];
   return (
     <div>
       <SheetHeader className="mb-4">

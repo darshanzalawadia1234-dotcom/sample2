@@ -7,6 +7,7 @@ import { Search, X, Calendar, Check, Plane, GripVertical } from 'lucide-react';
 import { PLACES_API_KEY } from '@/lib/config';
 import { loadGoogleMaps } from '@/lib/googleMaps';
 import { useTrips } from '@/context/TripContext';
+import { geocodeAutocomplete } from '@/lib/geoapify';
 
 const STEPS = [
   { id: 1, name: 'Destination' },
@@ -30,12 +31,28 @@ export default function PlanTrip() {
   const [slideDir, setSlideDir] = useState('right');
   const [destinations, setDestinations] = useState([]);
   const [searchQ, setSearchQ] = useState('');
+  const [liveSuggestions, setLiveSuggestions] = useState([]);
   const [dates, setDates] = useState({ start: '', end: '' });
   const [itinerary, setItinerary] = useState([]);
   const [error, setError] = useState(null);
   const [placesReady, setPlacesReady] = useState(false);
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!searchQ || searchQ.trim().length < 2) {
+      setLiveSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      geocodeAutocomplete(searchQ).then((results) => {
+        if (results && results.length > 0) {
+          setLiveSuggestions(results.map(r => r.name || `${r.city}, ${r.country}`));
+        }
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQ]);
 
   useEffect(() => {
     if (activeStep !== 1 || !searchInputRef.current || !PLACES_API_KEY) return undefined;
@@ -261,14 +278,17 @@ export default function PlanTrip() {
                 )}
                 
                 {searchQ && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[var(--deep-navy)]/10 rounded-xl shadow-lg z-10 overflow-hidden">
-                    {MOCK_DESTINATIONS.filter(d => d.toLowerCase().includes(searchQ.toLowerCase())).map(d => (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[var(--deep-navy)]/10 rounded-xl shadow-lg z-10 overflow-hidden max-h-60 overflow-y-auto">
+                    {[
+                      ...liveSuggestions,
+                      ...MOCK_DESTINATIONS.filter(d => d.toLowerCase().includes(searchQ.toLowerCase()))
+                    ].filter((v, i, arr) => arr.indexOf(v) === i).map((d) => (
                       <button 
                         key={d} 
                         onClick={() => addDestination(d)}
-                        className="w-full text-left px-4 py-3 text-sm font-mono hover:bg-[var(--warm-paper)] transition-colors border-b border-[var(--deep-navy)]/5 last:border-0"
+                        className="w-full text-left px-4 py-3 text-sm font-mono hover:bg-[var(--warm-paper)] transition-colors border-b border-[var(--deep-navy)]/5 last:border-0 flex items-center gap-2"
                       >
-                        {d}
+                        <span className="text-xs text-[var(--compass-brass)]">📍</span> {d}
                       </button>
                     ))}
                   </div>
