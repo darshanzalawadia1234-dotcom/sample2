@@ -4,6 +4,8 @@ import BudgetDial from '@/components/FlightDeck/BudgetDial';
 import MagneticButton from '@/components/MagneticButton';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, Calendar, Check, Plane, GripVertical } from 'lucide-react';
+import { PLACES_API_KEY } from '@/lib/config';
+import { loadGoogleMaps } from '@/lib/googleMaps';
 
 const STEPS = [
   { id: 1, name: 'Destination' },
@@ -29,7 +31,33 @@ export default function PlanTrip() {
   const [dates, setDates] = useState({ start: '', end: '' });
   const [itinerary, setItinerary] = useState([]);
   const [error, setError] = useState(null);
+  const searchInputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (activeStep !== 1 || !searchInputRef.current || !PLACES_API_KEY) return undefined;
+
+    let autocomplete;
+    let placeListener;
+    let cancelled = false;
+    loadGoogleMaps(PLACES_API_KEY).then((maps) => {
+      if (cancelled || !searchInputRef.current || !maps.places) return;
+      autocomplete = new maps.places.Autocomplete(searchInputRef.current, {
+        fields: ['formatted_address', 'name'],
+        types: ['(cities)'],
+      });
+      placeListener = autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        const destination = place.formatted_address || place.name;
+        if (destination) addDestination(destination);
+      });
+    }).catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+      if (placeListener) placeListener.remove();
+    };
+  }, [activeStep]);
 
   // Auto-fill dates string for the UI
   const dateString = dates.start && dates.end ? `${dates.start.replace(/-/g, '/')} – ${dates.end.replace(/-/g, '/')} · ${Math.ceil((new Date(dates.end) - new Date(dates.start)) / (1000 * 60 * 60 * 24) + 1)} DAYS` : '';
@@ -208,6 +236,7 @@ export default function PlanTrip() {
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--ink)]/40" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQ}
                   onChange={(e) => setSearchQ(e.target.value)}

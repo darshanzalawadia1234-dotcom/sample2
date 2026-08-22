@@ -1,8 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
+import { loadGoogleMaps } from "@/lib/googleMaps";
 
 // Simple mock map: renders points on an SVG grid with a route line.
 export default function MapView({ points = [], title = "Trip Route" }) {
+  const mapRef = useRef(null);
+  const [googleMapReady, setGoogleMapReady] = useState(false);
+  const [googleMapError, setGoogleMapError] = useState(false);
   const { normalized, distance, duration } = useMemo(() => {
     if (!points.length) return { normalized: [], distance: 0, duration: 0 };
     const lats = points.map((p) => p.lat);
@@ -25,6 +29,58 @@ export default function MapView({ points = [], title = "Trip Route" }) {
     return { normalized, distance, duration };
   }, [points]);
 
+  useEffect(() => {
+    if (!points.length) return undefined;
+
+    let cancelled = false;
+    loadGoogleMaps()
+      .then((maps) => {
+        if (cancelled || !mapRef.current) return;
+        const bounds = new maps.LatLngBounds();
+        points.forEach((point) => bounds.extend({ lat: point.lat, lng: point.lng }));
+        const map = new maps.Map(mapRef.current, {
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true,
+          clickableIcons: false,
+          styles: [
+            { elementType: "geometry", stylers: [{ color: "#f1ecdf" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#12213f" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#b9d8d2" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+          ],
+        });
+        map.fitBounds(bounds, 56);
+        points.forEach((point, index) => {
+          new maps.Marker({
+            map,
+            position: { lat: point.lat, lng: point.lng },
+            label: { text: String.fromCharCode(65 + index), color: "#12213f", fontWeight: "700" },
+            title: point.name,
+          });
+        });
+
+        if (points.length > 1) {
+          const directions = new maps.DirectionsService();
+          const renderer = new maps.DirectionsRenderer({ map, suppressMarkers: true, polylineOptions: { strokeColor: "#b8862f", strokeWeight: 4 } });
+          directions.route({
+            origin: { lat: points[0].lat, lng: points[0].lng },
+            destination: { lat: points[points.length - 1].lat, lng: points[points.length - 1].lng },
+            waypoints: points.slice(1, -1).map((point) => ({ location: { lat: point.lat, lng: point.lng }, stopover: true })),
+            travelMode: "DRIVING",
+          }, (result, status) => {
+            if (!cancelled && status === "OK") renderer.setDirections(result);
+          });
+        }
+        setGoogleMapReady(true);
+      })
+      .catch(() => {
+        if (!cancelled) setGoogleMapError(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [points]);
+
   return (
     <div className="rounded-3xl overflow-hidden border border-border">
       <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-border">
@@ -35,8 +91,9 @@ export default function MapView({ points = [], title = "Trip Route" }) {
         </div>
       </div>
       <div className="relative map-canvas h-[420px]">
+        <div ref={mapRef} className={`absolute inset-0 ${googleMapReady ? "" : "hidden"}`} aria-label="Google Maps trip route" />
         <div className="absolute inset-0 map-grid" />
-        <svg viewBox="0 0 700 380" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 w-full h-full">
+        <svg viewBox="0 0 700 380" preserveAspectRatio="xMidYMid meet" className={`absolute inset-0 w-full h-full ${googleMapReady ? "hidden" : ""}`}>
           {/* Route */}
           {normalized.length > 1 && (
             <polyline
@@ -64,6 +121,11 @@ export default function MapView({ points = [], title = "Trip Route" }) {
               <MapPin className="w-8 h-8 mx-auto mb-2 opacity-40" />
               Add destinations to see them on the map
             </div>
+          </div>
+        )}
+        {googleMapError && normalized.length > 0 && (
+          <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-sm">
+            Google Maps unavailable — showing offline route
           </div>
         )}
       </div>
