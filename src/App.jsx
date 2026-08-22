@@ -13,6 +13,8 @@ import ItineraryView from "@/pages/ItineraryView";
 import BudgetPage from "@/pages/BudgetPage";
 import SharedTrip from "@/pages/SharedTrip";
 import Profile from "@/pages/Profile";
+import Login from "@/pages/Login";
+import SignUp from "@/pages/SignUp";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
               <Route path="/trip/:id/budget" element={<BudgetPage />} />
               <Route path="/share/:id" element={<SharedTrip />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
             </Route>
           </Routes>
         </BrowserRouter>
